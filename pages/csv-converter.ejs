@@ -3,7 +3,7 @@
 <div style="min-height: 100vh; padding: 40px 0; background: #f5f7fa;">
   <div class="container" style="max-width: 600px; margin: 0 auto 30px auto;">
     <div class="header">
-      <h1>📊 Μετατροπή CSV σε Excel</h1>
+      <h1>🔄 Μετατροπή CSV σε Excel</h1>
       <p>Ανεβάστε ένα αρχείο CSV και κατεβάστε το ως Excel (.xlsx)</p>
     </div>
     
@@ -126,16 +126,42 @@
         
         <% if (typeof columnTypes !== 'undefined' && columnTypes && columnTypes.length > 0) { %>
           <div style="margin-top: 20px;">
-            <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 14px;">
-              📋 Τύποι Στηλών (Αυτόματη Ανίχνευση):
+            <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 14px; display: flex; align-items: center; justify-content: space-between;">
+              <span>📋 Τύποι Στηλών (Αυτόματη Ανίχνευση):</span>
+              <button id="toggleColumnTypes" type="button" style="background: none; border: none; color: #2563eb; font-size: 13px; cursor: pointer; padding: 2px 8px; border-radius: 4px;">Απόκρυψη</button>
             </h4>
-            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; background: #f9fafb;">
+            <div id="columnTypesTableWrap" style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; background: #f9fafb; transition: max-height 0.3s; max-height: none; overflow: hidden;">
               <table style="width: 100%; font-size: 13px;">
+<script>
+// Collapse/expand for column types
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('toggleColumnTypes');
+  const wrap = document.getElementById('columnTypesTableWrap');
+  let collapsed = false;
+  if (btn && wrap) {
+    btn.addEventListener('click', function() {
+      collapsed = !collapsed;
+      if (collapsed) {
+        wrap.style.maxHeight = '0px';
+        wrap.style.overflow = 'hidden';
+        btn.textContent = 'Εμφάνιση';
+      } else {
+        wrap.style.maxHeight = 'none';
+        wrap.style.overflow = 'visible';
+        btn.textContent = 'Απόκρυψη';
+      }
+    });
+  }
+});
+</script>
                 <thead style="background: #f3f4f6; position: sticky; top: 0;">
                   <tr>
                     <th style="padding: 8px; text-align: left; border-bottom: 2px solid #d1d5db;">Στήλη</th>
                     <th style="padding: 8px; text-align: left; border-bottom: 2px solid #d1d5db;">Ανιχνευμένος Τύπος</th>
                     <th style="padding: 8px; text-align: left; border-bottom: 2px solid #d1d5db;">Επιλογή Τύπου</th>
+                    <th style="padding: 8px; text-align: center; border-bottom: 2px solid #d1d5db;">💰 Νόμισμα</th>
+                    <th style="padding: 8px; text-align: center; border-bottom: 2px solid #d1d5db;">🔀 Μεικτά→String</th>
+                    <th style="padding: 8px; text-align: center; border-bottom: 2px solid #d1d5db;">🔓 Unescape HTML</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -148,8 +174,11 @@
                           color: <%= col.detectedType === 'string' ? '#1e40af' : col.detectedType === 'integer' ? '#15803d' : col.detectedType === 'float' ? '#a16207' : '#4338ca' %>;">
                           <%= col.detectedType === 'string' ? '📝 String' : col.detectedType === 'integer' ? '🔢 Integer' : col.detectedType === 'float' ? '💯 Float' : '📅 Date' %>
                         </span>
+                        <% if (col.isMixed) { %>
+                          <span style="color: #f59e0b; font-size: 11px; margin-left: 5px; font-weight: 600;">⚠️ Mixed!</span>
+                        <% } %>
                         <% if (col.hasEmpty) { %>
-                          <span style="color: #9ca3af; font-size: 11px; margin-left: 5px;">⚠️ Έχει κενά</span>
+                          <span style="color: #9ca3af; font-size: 11px; margin-left: 5px;">⚠️ Κενά</span>
                         <% } %>
                       </td>
                       <td style="padding: 8px;">
@@ -159,6 +188,18 @@
                           <option value="float" <%= col.detectedType === 'float' ? 'selected' : '' %>>Float</option>
                           <option value="date" <%= col.detectedType === 'date' ? 'selected' : '' %>>Date</option>
                         </select>
+                      </td>
+                      <td style="padding: 8px; text-align: center;">
+                        <input type="checkbox" name="currencyColumn_<%= index %>" value="true" style="width: 18px; height: 18px; cursor: pointer;" 
+                          <%= (col.detectedType === 'float' || col.detectedType === 'integer') ? '' : 'disabled' %>>
+                      </td>
+                      <td style="padding: 8px; text-align: center;">
+                        <input type="checkbox" name="mixedToString_<%= index %>" value="true" style="width: 18px; height: 18px; cursor: pointer;" 
+                          <%= col.isMixed ? '' : 'disabled' %>>
+                      </td>
+                      <td style="padding: 8px; text-align: center;">
+                        <input type="checkbox" name="unescapeHtml_<%= index %>" value="true" style="width: 18px; height: 18px; cursor: pointer;" 
+                          <%= col.detectedType === 'string' ? '' : 'disabled' %>>
                       </td>
                     </tr>
                   <% }) %>
@@ -213,5 +254,86 @@
     </div>
   <% } %>
 </div>
+
+<script>
+// Enable/disable currency checkbox based on column type selection
+document.addEventListener('DOMContentLoaded', function() {
+  const typeSelects = document.querySelectorAll('[name^="columnType_"]');
+  const convertForm = document.getElementById('convertForm');
+  
+  // Handle column type changes
+  typeSelects.forEach((select, index) => {
+    select.addEventListener('change', function() {
+      const currencyCheckbox = document.querySelector(`[name="currencyColumn_${index}"]`);
+      if (currencyCheckbox) {
+        const selectedType = this.value;
+        if (selectedType === 'float' || selectedType === 'integer') {
+          currencyCheckbox.disabled = false;
+        } else {
+          currencyCheckbox.disabled = true;
+          currencyCheckbox.checked = false;
+        }
+      }
+    });
+  });
+  
+  // Clone column types and currency columns to convert form on submit
+  if (convertForm) {
+    convertForm.addEventListener('submit', function(e) {
+      // Remove old cloned inputs first
+      convertForm.querySelectorAll('.cloned-column-data').forEach(el => el.remove());
+      
+      // Clone column type selects
+      typeSelects.forEach((select, index) => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = `columnType_${index}`;
+        hiddenInput.value = select.value;
+        hiddenInput.className = 'cloned-column-data';
+        convertForm.appendChild(hiddenInput);
+      });
+      
+      // Clone currency checkboxes
+      const currencyCheckboxes = document.querySelectorAll('[name^="currencyColumn_"]');
+      currencyCheckboxes.forEach((checkbox, index) => {
+        if (checkbox.checked && !checkbox.disabled) {
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = `currencyColumn_${index}`;
+          hiddenInput.value = 'true';
+          hiddenInput.className = 'cloned-column-data';
+          convertForm.appendChild(hiddenInput);
+        }
+      });
+      
+      // Clone mixed-to-string checkboxes
+      const mixedCheckboxes = document.querySelectorAll('[name^="mixedToString_"]');
+      mixedCheckboxes.forEach((checkbox, index) => {
+        if (checkbox.checked && !checkbox.disabled) {
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = `mixedToString_${index}`;
+          hiddenInput.value = 'true';
+          hiddenInput.className = 'cloned-column-data';
+          convertForm.appendChild(hiddenInput);
+        }
+      });
+      
+      // Clone unescape HTML checkboxes
+      const unescapeCheckboxes = document.querySelectorAll('[name^="unescapeHtml_"]');
+      unescapeCheckboxes.forEach((checkbox, index) => {
+        if (checkbox.checked && !checkbox.disabled) {
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = `unescapeHtml_${index}`;
+          hiddenInput.value = 'true';
+          hiddenInput.className = 'cloned-column-data';
+          convertForm.appendChild(hiddenInput);
+        }
+      });
+    });
+  }
+});
+</script>
 
 <%- include('partials/footer') %>
