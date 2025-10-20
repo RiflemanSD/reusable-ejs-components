@@ -1,10 +1,11 @@
 {
   "name": "@riflemansd/ejs-components",
-  "version": "1.0.0",
-  "description": "Reusable EJS components for Express applications - Data tables, stats cards, loading buttons, and file upload forms",
+  "version": "1.1.0",
+  "description": "Reusable EJS components for Express applications - Data tables, stats cards, loading buttons, file upload forms, and complete page templates",
   "main": "index.js",
   "files": [
     "components/*.ejs",
+    "pages/*.ejs",
     "docs/*.md",
     "scripts/*.sh"
   ],
@@ -17,7 +18,9 @@
     "data-table",
     "stats-card",
     "loading-button",
-    "file-upload"
+    "file-upload",
+    "csv-converter",
+    "page-templates"
   ],
   "author": "RiflemanSD",
   "license": "MIT",
