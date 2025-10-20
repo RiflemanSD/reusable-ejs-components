@@ -1,0 +1,40 @@
+{
+  "name": "@riflemansd/ejs-components",
+  "version": "1.0.0",
+  "description": "Reusable EJS components for Express applications - Data tables, stats cards, loading buttons, and file upload forms",
+  "main": "index.js",
+  "files": [
+    "components/*.ejs",
+    "docs/*.md",
+    "scripts/*.sh"
+  ],
+  "keywords": [
+    "ejs",
+    "components",
+    "express",
+    "templates",
+    "ui-components",
+    "data-table",
+    "stats-card",
+    "loading-button",
+    "file-upload"
+  ],
+  "author": "RiflemanSD",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RiflemanSD/opproducts-js.git",
+    "directory": "reusable-ejs-components"
+  },
+  "homepage": "https://github.com/RiflemanSD/opproducts-js/tree/main/reusable-ejs-components#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "peerDependencies": {
+    "ejs": "^3.0.0",
+    "express": "^4.0.0"
+  },
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  }
+}

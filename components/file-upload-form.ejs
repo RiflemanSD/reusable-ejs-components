@@ -1,0 +1,56 @@
+<% /*
+  Reusable File Upload Form Component
+
+  Props:
+  - action: Form action URL - REQUIRED
+  - inputName: Name attribute for file input - REQUIRED
+  - inputId: ID for file input (default: inputName)
+  - accept: File types to accept (default: "*")
+  - label: Label text (default: "Επιλέξτε αρχείο")
+  - helpText: Small help text below input (optional)
+  - buttonText: Submit button text (default: "Ανέβασμα")
+  - buttonIcon: Icon for button (optional)
+  - maxSize: Max file size description (optional)
+  - formId: Form ID (optional)
+  - method: Form method (default: "POST")
+*/ %>
+
+<form 
+  method="<%= typeof method !== 'undefined' ? method : 'POST' %>" 
+  action="<%= action %>" 
+  enctype="multipart/form-data"
+  <% if (typeof formId !== 'undefined' && formId) { %>id="<%= formId %>"<% } %>
+>
+  <div class="form-group">
+    <label for="<%= typeof inputId !== 'undefined' ? inputId : inputName %>">
+      <%= typeof label !== 'undefined' ? label : 'Επιλέξτε αρχείο' %>
+    </label>
+    <input 
+      type="file" 
+      id="<%= typeof inputId !== 'undefined' ? inputId : inputName %>" 
+      name="<%= inputName %>" 
+      accept="<%= typeof accept !== 'undefined' ? accept : '*' %>" 
+      required
+      style="padding: 10px; background: white; cursor: pointer;"
+    >
+    <small style="color: #7f8c8d; display: block; margin-top: 8px;">
+      <% if (typeof helpText !== 'undefined' && helpText) { %>
+        <%= helpText %>
+      <% } else { %>
+        <% if (typeof accept !== 'undefined' && accept !== '*') { %>
+          Μόνο αρχεία <%= accept %>
+        <% } %>
+        <% if (typeof maxSize !== 'undefined' && maxSize) { %>
+          (μέγιστο μέγεθος: <%= maxSize %>)
+        <% } %>
+      <% } %>
+    </small>
+  </div>
+  
+  <%- include('loading-button', { 
+    id: (typeof formId !== 'undefined' && formId) ? formId + '_submit' : inputName + '_submit',
+    text: typeof buttonText !== 'undefined' ? buttonText : 'Ανέβασμα',
+    icon: typeof buttonIcon !== 'undefined' ? buttonIcon : '',
+    cssClass: 'btn btn-primary'
+  }) %>
+</form>

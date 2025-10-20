@@ -1,0 +1,43 @@
+<% /*
+  Reusable Data Table Component
+
+  Props:
+  - data: Array of arrays (rows and columns) - REQUIRED
+  - title: Table title (optional)
+  - maxHeight: Max height for scrolling (default: 600px)
+  - showRowNumbers: Show row numbers column (default: false)
+*/ %>
+
+<div style="overflow-x: auto; max-height: <%= typeof maxHeight !== 'undefined' ? maxHeight : '600px' %>; overflow-y: auto; background: white; border-radius: 6px; border: 1px solid #e8eef3; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+  <% if (typeof title !== 'undefined' && title) { %>
+    <div style="padding: 15px; background: #ecf0f1; border-bottom: 2px solid #bdc3c7; position: sticky; top: 0; z-index: 5;">
+      <h3 style="margin: 0; color: #2c3e50; font-size: 16px; font-weight: 600;">
+        <%= title %>
+      </h3>
+    </div>
+  <% } %>
+  
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: max-content;">
+    <tbody>
+      <% data.forEach(function(row, rowIndex) { %>
+        <tr class="<%= rowIndex === 0 ? 'table-header' : (rowIndex % 2 === 0 ? 'table-row-even' : 'table-row-odd') %>">
+          <% if (typeof showRowNumbers !== 'undefined' && showRowNumbers && rowIndex > 0) { %>
+            <td style="border: 1px solid #e8eef3; padding: 8px 12px; color: #7f8c8d; background: #f8f9fa; font-weight: 600; text-align: center; white-space: nowrap;">
+              <%= rowIndex %>
+            </td>
+          <% } else if (typeof showRowNumbers !== 'undefined' && showRowNumbers && rowIndex === 0) { %>
+            <td style="border: 1px solid #e8eef3; padding: 8px 12px; background: #ecf0f1; font-weight: 600; text-align: center;">
+              #
+            </td>
+          <% } %>
+          
+          <% row.forEach(function(cell) { %>
+            <td style="border: 1px solid #e8eef3; padding: 8px 12px; color: #2c3e50; white-space: nowrap;">
+              <%= cell !== null && cell !== undefined ? cell : '' %>
+            </td>
+          <% }); %>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>

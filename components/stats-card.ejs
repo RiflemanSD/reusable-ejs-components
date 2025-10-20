@@ -1,0 +1,26 @@
+<% /*
+  Reusable Stats Card Component
+
+  Props:
+  - icon: Emoji or icon (optional)
+  - label: Description text - REQUIRED
+  - value: The main value to display - REQUIRED
+  - color: Background color (optional, default: white)
+  - valueColor: Color of the value (optional, default: #2c3e50)
+*/ %>
+
+<div style="background: <%= typeof color !== 'undefined' ? color : 'white' %>; padding: 20px; border-radius: 6px; border: 1px solid #e8eef3; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <% if (typeof icon !== 'undefined' && icon) { %>
+      <span style="font-size: 32px; line-height: 1;"><%= icon %></span>
+    <% } %>
+    <div style="flex: 1;">
+      <h4 style="margin: 0; color: #7f8c8d; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+        <%= label %>
+      </h4>
+      <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: 600; color: <%= typeof valueColor !== 'undefined' ? valueColor : '#2c3e50' %>;">
+        <%= value %>
+      </p>
+    </div>
+  </div>
+</div>
