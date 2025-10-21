@@ -333,6 +333,25 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
+
+  // Auto-submit when file is selected
+  const fileInput = document.getElementById('csvFile');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      if (this.files && this.files.length > 0) {
+        // Show loading state on button
+        if (typeof toggleLoadingButton !== 'undefined') {
+          toggleLoadingButton('uploadForm_submit', true);
+        }
+        
+        // Submit the form automatically
+        const form = document.getElementById('uploadForm');
+        if (form) {
+          form.submit();
+        }
+      }
+    });
+  }
 });
 </script>
 

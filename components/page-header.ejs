@@ -1,0 +1,31 @@
+<!-- Page Header Component -->
+<div class="page-header text-center mb-4">
+  <% if (typeof breadcrumb !== 'undefined' && breadcrumb && breadcrumb.length > 0) { %>
+    <nav class="mb-3">
+      <% breadcrumb.forEach((item, index) => { %>
+        <% if (index > 0) { %><span class="text-muted"> / </span><% } %>
+        <% if (item.href && index < breadcrumb.length - 1) { %>
+          <a href="<%= item.href %>" class="text-primary text-decoration-none"><%= item.text %></a>
+        <% } else { %>
+          <span class="<%= index === breadcrumb.length - 1 ? 'text-secondary font-semibold' : 'text-muted' %>"><%= item.text %></span>
+        <% } %>
+      <% }) %>
+    </nav>
+  <% } %>
+  
+  <h1 class="page-title">
+    <% if (typeof icon !== 'undefined' && icon) { %><%= icon %> <% } %><%= title %>
+  </h1>
+  
+  <% if (typeof subtitle !== 'undefined' && subtitle) { %>
+    <p class="page-subtitle text-muted"><%= subtitle %></p>
+  <% } %>
+  
+  <% if (typeof actions !== 'undefined' && actions && actions.length > 0) { %>
+    <div class="page-actions mt-3">
+      <% actions.forEach(action => { %>
+        <%- include('../components/action-button', action) %>
+      <% }) %>
+    </div>
+  <% } %>
+</div>

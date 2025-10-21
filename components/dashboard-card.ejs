@@ -1,0 +1,10 @@
+<!-- Dashboard Card Component -->
+<div class="card hover-shadow hover-lift transition">
+  <div class="card-header">
+    <h3 class="card-title <%= (typeof iconClass !== 'undefined' && iconClass) ? iconClass : '' %>"><%= icon %> <%= title %></h3>
+    <p class="card-description"><%= description %></p>
+  </div>
+  <div class="card-footer">
+    <a href="<%= href %>" class="btn btn-primary w-100"><%= buttonText %></a>
+  </div>
+</div>

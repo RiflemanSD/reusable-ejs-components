@@ -1,0 +1,27 @@
+<!-- Action Button Component -->
+<% 
+  const btnClass = (typeof type !== 'undefined' && type === 'danger') ? 'btn-danger' : 
+                   (typeof type !== 'undefined' && type === 'success') ? 'btn-success' : 
+                   (typeof type !== 'undefined' && type === 'secondary') ? 'btn-secondary' : 
+                   'btn-primary';
+  const sizeClass = (typeof size !== 'undefined' && size === 'large') ? 'btn-large' : 
+                    (typeof size !== 'undefined' && size === 'small') ? 'btn-small' : '';
+  const safeExtraClass = (typeof extraClass !== 'undefined' && extraClass) ? extraClass : '';
+  const safeIcon = (typeof icon !== 'undefined' && icon) ? icon + ' ' : '';
+%>
+
+<% if (typeof isForm !== 'undefined' && isForm) { %>
+  <form method="<%= (typeof method !== 'undefined' && method) ? method : 'POST' %>" action="<%= action %>">
+    <button type="submit" class="btn <%= btnClass %> <%= sizeClass %> <%= safeExtraClass %>">
+      <%= safeIcon %><%= text %>
+    </button>
+  </form>
+<% } else if (typeof type !== 'undefined' && type === 'submit') { %>
+  <button type="submit" class="btn <%= btnClass %> <%= sizeClass %> <%= safeExtraClass %>">
+    <%= safeIcon %><%= text %>
+  </button>
+<% } else { %>
+  <a href="<%= (typeof href !== 'undefined' && href) ? href : '#' %>" class="btn <%= btnClass %> <%= sizeClass %> <%= safeExtraClass %>">
+    <%= safeIcon %><%= text %>
+  </a>
+<% } %>
