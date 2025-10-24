@@ -13,8 +13,13 @@
     </nav>
   <% } %>
   
-  <h1 class="page-title">
-    <% if (typeof icon !== 'undefined' && icon) { %><%= icon %> <% } %><%= title %>
+  <h1 class="page-title flex items-center justify-center gap-2">
+    <% if (typeof icon !== 'undefined' && icon) { %>
+      <span class="inline-flex items-center justify-center bg-primary rounded-full p-2">
+        <%- icon %>
+      </span>
+    <% } %>
+    <span class="align-middle"><%= title %></span>
   </h1>
   
   <% if (typeof subtitle !== 'undefined' && subtitle) { %>
