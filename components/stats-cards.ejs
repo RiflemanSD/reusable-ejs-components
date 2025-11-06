@@ -1,0 +1,25 @@
+<%
+  // Stats Cards Component - Display statistics in a row
+  // Required: stats (array of { label, value, color, icon })
+  // Optional: bgClass, shadowClass
+  
+  var statsBgClass = typeof bgClass !== 'undefined' ? bgClass : 'bg-white';
+  var statsShadowClass = typeof shadowClass !== 'undefined' ? shadowClass : 'shadow-lg';
+%>
+
+<div class="stats <%= statsBgClass %> <%= statsShadowClass %> w-full">
+  <% stats.forEach(function(stat) { %>
+    <div class="stat">
+      <% if (stat.icon) { %>
+        <div class="stat-figure text-<%= stat.color || 'primary' %>">
+          <%- stat.icon %>
+        </div>
+      <% } %>
+      <div class="stat-title"><%= stat.label %></div>
+      <div class="stat-value text-<%= stat.color || 'primary' %>"><%= stat.value || 0 %></div>
+      <% if (stat.description) { %>
+        <div class="stat-desc"><%= stat.description %></div>
+      <% } %>
+    </div>
+  <% }); %>
+</div>

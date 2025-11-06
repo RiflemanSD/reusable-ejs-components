@@ -1,6 +1,154 @@
 # Components Directory
 
-Αυτός ο φάκελος περιέχει επαναχρησιμοποιήσιμα EJS components για την εφαρμογή.
+Αυτός ο φάκελος περιέχει επαναχρησιμοποιήσιμα EJS components για την εφαρμογή με Tailwind CSS + DaisyUI.
+
+## 🆕 Νέα Components (Tailwind/DaisyUI)
+
+### 1. `page-hero.ejs`
+**Χρήση:** Professional page header με gradient, breadcrumbs, actions και stats
+**Παράμετροι:**
+- `title` (required) - Τίτλος σελίδας
+- `icon` (required) - SVG icon HTML
+- `gradient` (required) - Gradient classes (π.χ. `'from-indigo-600 to-purple-700'`)
+- `subtitle` (optional) - Υπότιτλος
+- `breadcrumbs` (optional) - Array με `{ text, href }` objects
+- `actions` (optional) - Array με `{ text, href, onclick, btnClass, icon }` objects
+- `stats` (optional) - Array με `{ label, value }` objects
+- `warning` (optional) - Warning message HTML
+
+```ejs
+<%- include('lib/reusable-ejs-components/components/page-hero', {
+  title: 'Έσοδα & Έξοδα',
+  icon: '<svg class="h-8 w-8 text-white">...</svg>',
+  gradient: 'from-emerald-800 via-emerald-700 to-emerald-800',
+  breadcrumbs: [
+    { text: 'Dashboard', href: '/dashboard' },
+    { text: 'Expenses' }
+  ],
+  actions: [{
+    text: 'Νέα Συναλλαγή',
+    href: '/expenses/new',
+    btnClass: 'btn-success',
+    icon: '<svg>...</svg>'
+  }]
+}) %>
+```
+
+### 2. `empty-state.ejs`
+**Χρήση:** Empty state με icon και call-to-action
+**Παράμετροι:**
+- `title` (required) - Τίτλος
+- `description` (required) - Περιγραφή
+- `icon` (optional) - SVG icon HTML
+- `actionText` (optional) - Button text
+- `actionOnclick` (optional) - Button onclick
+- `actionHref` (optional) - Button href
+- `actionClass` (optional) - Button class (default: 'btn-primary')
+- `actionIcon` (optional) - Button icon HTML
+
+```ejs
+<%- include('lib/reusable-ejs-components/components/empty-state', {
+  title: 'Δεν υπάρχουν κατηγορίες',
+  description: 'Δημιούργησε την πρώτη σου κατηγορία',
+  actionText: 'Δημιουργία Κατηγορίας',
+  actionOnclick: 'showAddCategoryModal()',
+  actionIcon: '<svg>...</svg>'
+}) %>
+```
+
+### 3. `modal-dialog.ejs`
+**Χρήση:** DaisyUI modal με form support
+**Παράμετροι:**
+- `id` (required) - Modal ID
+- `title` (required) - Modal title
+- `content` (optional) - Modal body HTML
+- `size` (optional) - 'sm', 'md', 'lg', 'xl', '2xl' (default: 'md')
+- `submitText` (optional) - Submit button text (default: 'Αποθήκευση')
+- `submitClass` (optional) - Submit button class (default: 'btn-primary')
+- `cancelText` (optional) - Cancel button text (default: 'Ακύρωση')
+- `formAction` (optional) - Form action URL
+- `formMethod` (optional) - Form method (default: 'POST')
+- `onSubmit` (optional) - Form onsubmit handler
+
+```ejs
+<%- include('lib/reusable-ejs-components/components/modal-dialog', {
+  id: 'categoryModal',
+  title: 'Νέα Κατηγορία',
+  size: 'md',
+  formAction: '/task-categories',
+  content: `
+    <div class="form-control">
+      <label class="label"><span class="label-text">Όνομα</span></label>
+      <input name="name" type="text" class="input input-bordered" required />
+    </div>
+  `,
+  submitText: 'Δημιουργία'
+}) %>
+```
+
+### 4. `stats-cards.ejs`
+**Χρήση:** Statistics cards σε row
+**Παράμετροι:**
+- `stats` (required) - Array με `{ label, value, color, icon, description }` objects
+- `bgClass` (optional) - Background class (default: 'bg-white')
+- `shadowClass` (optional) - Shadow class (default: 'shadow-lg')
+
+```ejs
+<%- include('lib/reusable-ejs-components/components/stats-cards', {
+  stats: [
+    { label: 'Εκκρεμή', value: 12, color: 'primary' },
+    { label: 'Ολοκληρωμένα', value: 45, color: 'success', description: '+5% από χθες' }
+  ]
+}) %>
+```
+
+### 5. `alert-box.ejs`
+**Χρήση:** Alert/Warning/Success/Error messages
+**Παράμετροι:**
+- `message` (required) - Alert message (HTML supported)
+- `type` (required) - 'info', 'success', 'warning', 'error'
+- `icon` (optional) - Custom SVG icon HTML
+- `dismissible` (optional) - true για dismissible alert (default: false)
+
+```ejs
+<%- include('lib/reusable-ejs-components/components/alert-box', {
+  type: 'warning',
+  message: 'Ο πίνακας <code>schedule_items</code> δεν υπάρχει.',
+  dismissible: true
+}) %>
+```
+
+### 6. `filter-card.ejs`
+**Χρήση:** Filters form card
+**Παράμετροι:**
+- `action` (required) - Form action URL
+- `filters` (required) - Array με filter objects: `{ type, name, label, value, options, placeholder }`
+- `method` (optional) - Form method (default: 'GET')
+- `title` (optional) - Card title (default: 'Φίλτρα')
+- `submitText` (optional) - Submit button text (default: 'Αναζήτηση')
+- `submitClass` (optional) - Submit button class (default: 'btn-primary')
+
+Filter types: 'text', 'number', 'date', 'select'
+
+```ejs
+<%- include('lib/reusable-ejs-components/components/filter-card', {
+  action: '/expenses',
+  filters: [
+    { type: 'date', name: 'startDate', label: 'Από', value: filters.startDate },
+    { type: 'select', name: 'type', label: 'Τύπος', value: filters.type, 
+      placeholder: 'Όλα',
+      options: [
+        { value: 'income', label: 'Έσοδα' },
+        { value: 'expense', label: 'Έξοδα' }
+      ]
+    }
+  ]
+}) %>
+```
+
+---
+
+## Legacy Components (Bootstrap)
 
 ## Διαθέσιμα Components
 

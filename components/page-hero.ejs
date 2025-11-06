@@ -1,0 +1,89 @@
+<%
+  // Page Hero Component - Professional header with gradient, breadcrumbs, actions
+  // Required: title, icon, gradient
+  // Optional: subtitle, breadcrumbs, actions, stats, warning
+  
+  var heroSubtitle = typeof subtitle !== 'undefined' ? subtitle : '';
+  var heroBreadcrumbs = typeof breadcrumbs !== 'undefined' ? breadcrumbs : [];
+  var heroActions = typeof actions !== 'undefined' ? actions : [];
+  var heroStats = typeof stats !== 'undefined' ? stats : null;
+  var heroWarning = typeof warning !== 'undefined' ? warning : null;
+%>
+
+<style>
+  .hero-header svg { width: 2rem; height: 2rem; flex-shrink: 0; }
+</style>
+
+<div class="bg-gradient-to-r <%= gradient %> shadow-lg border-b border-opacity-60">
+  <div class="container mx-auto px-6 py-8 hero-header">
+    <div class="flex items-center justify-between flex-wrap gap-6">
+      <div class="flex items-center gap-4">
+        <!-- Icon Container -->
+        <div class="flex items-center justify-center w-14 h-14 bg-white/10 rounded-xl backdrop-blur-sm">
+          <%- icon %>
+        </div>
+        
+        <!-- Title & Breadcrumbs -->
+        <div>
+          <h1 class="text-3xl font-bold text-white mb-1"><%= title %></h1>
+          <% if (heroSubtitle) { %>
+            <p class="text-white/80 text-sm"><%= heroSubtitle %></p>
+          <% } %>
+          <% if (heroBreadcrumbs.length > 0) { %>
+            <div class="text-white/80 text-sm breadcrumbs">
+              <ul>
+                <% heroBreadcrumbs.forEach(function(crumb) { %>
+                  <li>
+                    <% if (crumb.href) { %>
+                      <a href="<%= crumb.href %>" class="text-white/80 hover:text-white transition-colors"><%= crumb.text %></a>
+                    <% } else { %>
+                      <span class="text-white"><%= crumb.text %></span>
+                    <% } %>
+                  </li>
+                <% }); %>
+              </ul>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Actions or Stats -->
+      <% if (heroStats) { %>
+        <div class="stats bg-white/10 backdrop-blur-sm shadow-xl border border-white/20">
+          <% heroStats.forEach(function(stat) { %>
+            <div class="stat">
+              <div class="stat-title text-white/70"><%= stat.label %></div>
+              <div class="stat-value text-white text-2xl"><%= stat.value || 0 %></div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else if (heroActions.length > 0) { %>
+        <div class="flex gap-2 flex-wrap">
+          <% heroActions.forEach(function(action) { %>
+            <% if (action.href) { %>
+              <a href="<%= action.href %>" class="btn <%= action.btnClass || 'btn-primary' %> gap-2 shadow-lg">
+                <% if (action.icon) { %><%- action.icon %><% } %>
+                <%= action.text %>
+              </a>
+            <% } else if (action.onclick) { %>
+              <button onclick="<%= action.onclick %>" class="btn <%= action.btnClass || 'btn-primary' %> gap-2">
+                <% if (action.icon) { %><%- action.icon %><% } %>
+                <%= action.text %>
+              </button>
+            <% } %>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- Warning/Alert Message -->
+    <% if (heroWarning) { %>
+      <div class="alert alert-warning mt-6 shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span><%- heroWarning %></span>
+      </div>
+    <% } %>
+  </div>
+</div>

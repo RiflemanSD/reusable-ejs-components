@@ -1,10 +1,38 @@
-<!-- Dashboard Card Component -->
-<div class="card hover-shadow hover-lift transition">
-  <div class="card-header">
-    <h3 class="card-title <%= (typeof iconClass !== 'undefined' && iconClass) ? iconClass : '' %>"><%= icon %> <%= title %></h3>
-    <p class="card-description"><%= description %></p>
-  </div>
-  <div class="card-footer">
-    <a href="<%= href %>" class="btn btn-primary w-100"><%= buttonText %></a>
+<!-- Dashboard Card Component - DaisyUI/Tailwind Version -->
+<%
+  // Default values
+  var cardColor = typeof colorClass !== 'undefined' ? colorClass : 'text-primary';
+  var hasNewBadge = typeof isNew !== 'undefined' && isNew;
+  var hasBorder = typeof borderHighlight !== 'undefined' && borderHighlight;
+  var btnClass = typeof buttonClass !== 'undefined' ? buttonClass : 'btn-primary';
+  var btnText = typeof buttonText !== 'undefined' ? buttonText : 'Προβολή';
+%>
+<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 <%= hasBorder ? 'border-2 border-emerald-400' : '' %>">
+  <div class="card-body">
+    <% if (hasNewBadge) { %>
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="card-title <%= cardColor %>">
+        <span class="text-2xl mr-2"><%= emoji %></span>
+        <%= title %>
+      </h2>
+      <span class="badge badge-success badge-sm">ΝΕΟ!</span>
+    </div>
+    <% } else { %>
+    <h2 class="card-title <%= cardColor %>">
+      <span class="text-2xl mr-2"><%= emoji %></span>
+      <%= title %>
+    </h2>
+    <% } %>
+    <p class="text-base-content/70">
+      <%= description %>
+    </p>
+    <div class="card-actions justify-end mt-4">
+      <a href="<%= href %>" class="btn <%= btnClass %> btn-block gap-2">
+        <% if (typeof svgIcon !== 'undefined' && svgIcon) { %>
+        <%- svgIcon %>
+        <% } %>
+        <%= btnText %>
+      </a>
+    </div>
   </div>
 </div>

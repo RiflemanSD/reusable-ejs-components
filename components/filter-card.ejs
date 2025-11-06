@@ -1,0 +1,82 @@
+<%
+  // Filter Card Component - Form with filters for data filtering
+  // Required: action, filters (array of filter objects)
+  // Optional: method, title, submitText, submitClass
+  
+  var filterMethod = typeof method !== 'undefined' ? method : 'GET';
+  var filterTitle = typeof title !== 'undefined' ? title : 'Φίλτρα';
+  var filterSubmitText = typeof submitText !== 'undefined' ? submitText : 'Αναζήτηση';
+  var filterSubmitClass = typeof submitClass !== 'undefined' ? submitClass : 'btn-primary';
+%>
+
+<div class="card bg-base-100 shadow-lg mb-6">
+  <div class="card-body">
+    <h2 class="card-title text-lg mb-4">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+      </svg>
+      <%= filterTitle %>
+    </h2>
+    
+    <form method="<%= filterMethod %>" action="<%= action %>">
+      <div class="grid grid-cols-1 md:grid-cols-<%= Math.min(filters.length, 4) %> gap-4">
+        <% filters.forEach(function(filter) { %>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text"><%= filter.label %></span>
+            </label>
+            
+            <% if (filter.type === 'date') { %>
+              <input type="date" 
+                     name="<%= filter.name %>" 
+                     value="<%= filter.value || '' %>" 
+                     class="input input-bordered" />
+            
+            <% } else if (filter.type === 'select') { %>
+              <select name="<%= filter.name %>" class="select select-bordered">
+                <% if (filter.placeholder) { %>
+                  <option value=""><%= filter.placeholder %></option>
+                <% } %>
+                <% (filter.options || []).forEach(function(opt) { %>
+                  <option value="<%= opt.value %>" 
+                          <%= filter.value == opt.value ? 'selected' : '' %>>
+                    <%= opt.label %>
+                  </option>
+                <% }); %>
+              </select>
+            
+            <% } else if (filter.type === 'text') { %>
+              <input type="text" 
+                     name="<%= filter.name %>" 
+                     value="<%= filter.value || '' %>" 
+                     placeholder="<%= filter.placeholder || '' %>"
+                     class="input input-bordered" />
+            
+            <% } else if (filter.type === 'number') { %>
+              <input type="number" 
+                     name="<%= filter.name %>" 
+                     value="<%= filter.value || '' %>" 
+                     placeholder="<%= filter.placeholder || '' %>"
+                     class="input input-bordered" />
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+      
+      <div class="mt-4 flex gap-2">
+        <button type="submit" class="btn <%= filterSubmitClass %> gap-2">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <%= filterSubmitText %>
+        </button>
+        <a href="<%= action %>" class="btn btn-ghost gap-2">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Καθαρισμός
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

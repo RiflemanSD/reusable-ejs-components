@@ -1,0 +1,57 @@
+<%
+  // Modal Dialog Component - DaisyUI Modal with form support
+  // Required: id, title
+  // Optional: size, content, submitText, submitClass, cancelText, formAction, formMethod, onSubmit, titleId
+  
+  var modalSize = typeof size !== 'undefined' ? size : 'md';
+  var sizeClass = modalSize === 'sm' ? '' : (modalSize === 'lg' ? 'w-11/12 max-w-3xl' : modalSize === 'xl' ? 'w-11/12 max-w-5xl' : modalSize === '2xl' ? 'w-11/12 max-w-7xl' : 'w-11/12 max-w-2xl');
+  var modalContent = typeof content !== 'undefined' ? content : '';
+  var modalSubmitText = typeof submitText !== 'undefined' ? submitText : 'Αποθήκευση';
+  var modalSubmitClass = typeof submitClass !== 'undefined' ? submitClass : 'btn-primary';
+  var modalCancelText = typeof cancelText !== 'undefined' ? cancelText : 'Ακύρωση';
+  var modalFormAction = typeof formAction !== 'undefined' ? formAction : '';
+  var modalFormMethod = typeof formMethod !== 'undefined' ? formMethod : 'POST';
+  var modalOnSubmit = typeof onSubmit !== 'undefined' ? onSubmit : '';
+  var modalTitleId = typeof titleId !== 'undefined' ? titleId : '';
+  var hasForm = typeof formAction !== 'undefined' || typeof onSubmit !== 'undefined';
+%>
+
+<dialog id="<%= id %>" class="modal">
+  <div class="modal-box <%= sizeClass %>">
+    <h3 class="font-bold text-lg mb-4" <% if (modalTitleId) { %>id="<%= modalTitleId %>"<% } %>><%= title %></h3>
+    
+    <% if (hasForm) { %>
+      <form <% if (modalFormAction) { %>action="<%= modalFormAction %>"<% } %> 
+            <% if (modalFormMethod) { %>method="<%= modalFormMethod %>"<% } %>
+            <% if (modalOnSubmit) { %>onsubmit="<%= modalOnSubmit %>"<% } %>>
+        <%- modalContent %>
+        
+        <div class="modal-action">
+          <button type="button" onclick="document.getElementById('<%= id %>').close()" class="btn">
+            <%= modalCancelText %>
+          </button>
+          <button type="submit" class="btn <%= modalSubmitClass %>">
+            <%= modalSubmitText %>
+          </button>
+        </div>
+      </form>
+    <% } else { %>
+      <%- modalContent %>
+      
+      <div class="modal-action">
+        <button onclick="document.getElementById('<%= id %>').close()" class="btn">
+          <%= modalCancelText %>
+        </button>
+        <% if (modalSubmitText) { %>
+          <button class="btn <%= modalSubmitClass %>">
+            <%= modalSubmitText %>
+          </button>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+  
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
