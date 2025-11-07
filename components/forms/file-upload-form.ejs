@@ -47,7 +47,7 @@
     </small>
   </div>
   
-  <%- include('loading-button', { 
+  <%- include('../ui/loading-button', { 
     id: (typeof formId !== 'undefined' && formId) ? formId + '_submit' : inputName + '_submit',
     text: typeof buttonText !== 'undefined' ? buttonText : 'Ανέβασμα',
     icon: typeof buttonIcon !== 'undefined' ? buttonIcon : '',
