@@ -55,17 +55,7 @@
   actionIcon: '<svg>...</svg>'
 }) %>
 ```
-
-### 3. `modal-dialog.ejs`
-**Χρήση:** DaisyUI modal με form support
-**Παράμετροι:**
-- `id` (required) - Modal ID
-- `title` (required) - Modal title
-- `content` (optional) - Modal body HTML
-- `size` (optional) - 'sm', 'md', 'lg', 'xl', '2xl' (default: 'md')
-- `submitText` (optional) - Submit button text (default: 'Αποθήκευση')
-- `submitClass` (optional) - Submit button class (default: 'btn-primary')
-- `cancelText` (optional) - Cancel button text (default: 'Ακύρωση')
+- `cancelText` (optional) - Cancel button text (default: 'Cancel')
 - `formAction` (optional) - Form action URL
 - `formMethod` (optional) - Form method (default: 'POST')
 - `onSubmit` (optional) - Form onsubmit handler
@@ -78,19 +68,13 @@
   formAction: '/task-categories',
   content: `
     <div class="form-control">
-      <label class="label"><span class="label-text">Όνομα</span></label>
+    submitText: 'Save'
       <input name="name" type="text" class="input input-bordered" required />
     </div>
   `,
   submitText: 'Δημιουργία'
 }) %>
 ```
-
-### 4. `stats-cards.ejs`
-**Χρήση:** Statistics cards σε row
-**Παράμετροι:**
-- `stats` (required) - Array με `{ label, value, color, icon, description }` objects
-- `bgClass` (optional) - Background class (default: 'bg-white')
 - `shadowClass` (optional) - Shadow class (default: 'shadow-lg')
 
 ```ejs
@@ -105,27 +89,21 @@
 ### 5. `alert-box.ejs`
 **Χρήση:** Alert/Warning/Success/Error messages
 **Παράμετροι:**
-- `message` (required) - Alert message (HTML supported)
+    submitText: 'Search'
 - `type` (required) - 'info', 'success', 'warning', 'error'
 - `icon` (optional) - Custom SVG icon HTML
 - `dismissible` (optional) - true για dismissible alert (default: false)
 
 ```ejs
 <%- include('lib/reusable-ejs-components/components/alert-box', {
-  type: 'warning',
-  message: 'Ο πίνακας <code>schedule_items</code> δεν υπάρχει.',
-  dismissible: true
-}) %>
-```
-
 ### 6. `filter-card.ejs`
 **Χρήση:** Filters form card
 **Παράμετροι:**
 - `action` (required) - Form action URL
 - `filters` (required) - Array με filter objects: `{ type, name, label, value, options, placeholder }`
 - `method` (optional) - Form method (default: 'GET')
-- `title` (optional) - Card title (default: 'Φίλτρα')
-- `submitText` (optional) - Submit button text (default: 'Αναζήτηση')
+- `title` (optional) - Card title (default: 'Filters')
+- `submitText` (optional) - Submit button text (default: 'Search')
 - `submitClass` (optional) - Submit button class (default: 'btn-primary')
 
 Filter types: 'text', 'number', 'date', 'select'
@@ -166,9 +144,9 @@ Filter types: 'text', 'number', 'date', 'select'
 <%- include('partials/components/dashboard-card', {
   icon: '📊',
   title: 'Διαχείριση Δεδομένων',
-  description: 'Προβολή και επεξεργασία δεδομένων',
+  description: 'View and edit data',
   href: '/show-data',
-  buttonText: 'Προβολή',
+  buttonText: 'View',
   iconClass: 'text-primary'
 }) %>
 ```

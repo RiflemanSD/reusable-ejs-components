@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: 'Μετατροπή CSV σε Excel', favicon: '🔄' }) %>
+<%- include('../../../views/partials/header', { title: 'Μετατροπή CSV σε Excel', favicon: '🔄' }) %>
 
 <style>
   /* Constrain header icons across this page */
@@ -36,7 +36,7 @@
     <!-- File Upload Card -->
     <div class="card bg-base-100 shadow-xl mb-6">
       <div class="card-body">
-        <%- include('partials/components/file-upload-form', { 
+  <%- include('../../../views/partials/components/file-upload-form', { 
           formId: 'uploadForm',
           action: '/csv-converter/upload',
           inputName: 'csvFile',
@@ -85,7 +85,7 @@
       
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <%- include('partials/components/stats-card', { 
+  <%- include('../../../views/partials/components/stats-card', { 
           icon: '📊', 
           label: 'Σύνολο Γραμμών', 
           value: previewData.length,
@@ -93,7 +93,7 @@
           valueColor: '#0284c7'
         }) %>
         
-        <%- include('partials/components/stats-card', { 
+  <%- include('../../../views/partials/components/stats-card', { 
           icon: '📋', 
           label: 'Αριθμός Στηλών', 
           value: previewData[0] ? previewData[0].length : 0,
@@ -101,7 +101,7 @@
           valueColor: '#16a34a'
         }) %>
         
-        <%- include('partials/components/stats-card', { 
+  <%- include('../../../views/partials/components/stats-card', { 
           icon: '📄', 
           label: 'Όνομα Αρχείου', 
           value: fileName.length > 20 ? fileName.substring(0, 20) + '...' : fileName,
@@ -109,7 +109,7 @@
           valueColor: '#ea580c'
         }) %>
         
-        <%- include('partials/components/stats-card', { 
+  <%- include('../../../views/partials/components/stats-card', { 
           icon: '🔧', 
           label: 'Διαχωριστικό', 
           value: typeof detectedDelimiter !== 'undefined' ? (detectedDelimiter === ',' ? 'Κόμμα (,)' : detectedDelimiter === ';' ? 'Ερωτηματικό (;)' : detectedDelimiter === '\t' ? 'Tab' : detectedDelimiter) : 'Κόμμα (,)',
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
 
       <% /* Using the Data Table Component */ %>
-      <%- include('partials/components/data-table', { 
+  <%- include('../../../views/partials/components/data-table', { 
         data: previewData,
         maxHeight: '600px',
         showRowNumbers: false
@@ -430,4 +430,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<%- include('partials/footer') %>
+<%- include('../../../views/partials/footer') %>

@@ -8,12 +8,32 @@ A professional component library for Express.js applications using EJS templatin
 
 ## 📦 What's Included
 
-4 production-ready EJS components:
+13 production-ready EJS components organized by category:
 
-- **📊 data-table** - Dynamic data tables with sticky headers
-- **📈 stats-card** - Statistics cards with icons
-- **⏳ loading-button** - Buttons with automatic loading states
-- **📤 file-upload-form** - Complete file upload forms
+### 🎴 Cards
+- **dashboard-card** - Versatile dashboard cards with badges and actions
+- **stats-card** - Statistics cards with icons and values
+- **stats-cards** - Multiple stats cards in a grid layout
+
+### 📝 Forms
+- **filter-card** - Collapsible filter forms with search functionality
+- **file-upload-form** - Complete file upload forms with validation
+
+### 💬 Feedback
+- **alert-box** - Alert messages with different severity levels
+- **empty-state** - Placeholder for empty data states
+
+### 📐 Layout
+- **page-hero** - Page header with title, description, and actions
+
+### 🎛️ UI Components
+- **action-button** - Buttons with icons and various styles
+- **modal-dialog** - Modal dialogs with customizable content
+- **data-table** - Dynamic data tables with sticky headers
+
+### ⚙️ Legacy Components (Bootstrap)
+- **loading-button** - Buttons with automatic loading states
+- **file-upload** - Basic file upload component
 
 ---
 
@@ -49,19 +69,31 @@ cd reusable-ejs-components
 <html>
 <head>
     <title>Dashboard</title>
-    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Stats Card -->
-    <%- include('partials/components/stats-card', {
-        icon: '📊',
-        label: 'Total Users',
-        value: '1,234',
-        color: '#007bff'
+    <!-- Dashboard Card -->
+    <%- include('partials/components/cards/dashboard-card', {
+        title: 'Statistics',
+        description: 'View system statistics',
+        icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+        link: '/dashboard/stats',
+        btnText: 'View Details',
+        showBadge: true,
+        badgeLabel: 'NEW'
+    }) %>
+    
+    <!-- Stats Cards -->
+    <%- include('partials/components/cards/stats-cards', {
+        stats: [
+            { icon: '👥', label: 'Total Users', value: '1,234', bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
+            { icon: '📊', label: 'Revenue', value: '$12,345', bgColor: 'bg-green-50', iconColor: 'text-green-600' }
+        ]
     }) %>
     
     <!-- Data Table -->
-    <%- include('partials/components/data-table', {
+    <%- include('partials/components/ui/data-table', {
         data: [
             ['Name', 'Email', 'Role'],
             ['John Doe', 'john@example.com', 'Admin'],
@@ -87,9 +119,13 @@ cd reusable-ejs-components
 
 ## 🎯 Features
 
-- ✅ **Zero Dependencies** - Pure EJS, no external libraries
-- ✅ **Responsive Design** - Works on all screen sizes
-- ✅ **Easy to Customize** - Simple CSS overrides
+- ✅ **Modern Stack** - Built with Tailwind CSS + DaisyUI
+- ✅ **Zero Dependencies** - Pure EJS, no JavaScript frameworks
+- ✅ **Organized Structure** - Components categorized by function
+- ✅ **Responsive Design** - Mobile-first approach
+- ✅ **Dark Mode Ready** - Full DaisyUI theme support
+- ✅ **Accessible** - ARIA labels and semantic HTML
+- ✅ **Neutralized Defaults** - No hardcoded language strings
 - ✅ **Production Ready** - Battle-tested in real applications
 - ✅ **Well Documented** - Complete docs with examples
 - ✅ **TypeScript Ready** - Works with Express + TypeScript
@@ -101,6 +137,8 @@ cd reusable-ejs-components
 - Node.js >= 14
 - Express.js >= 4.0
 - EJS >= 3.0
+- Tailwind CSS >= 3.0
+- DaisyUI >= 4.0 (recommended)
 
 ---
 
@@ -108,13 +146,31 @@ cd reusable-ejs-components
 
 ```
 reusable-ejs-components/
-├── components/          # EJS component files
-│   ├── data-table.ejs
-│   ├── stats-card.ejs
-│   ├── loading-button.ejs
-│   └── file-upload-form.ejs
-├── docs/               # Documentation
-├── scripts/            # Helper scripts
+├── components/              # EJS component files
+│   ├── cards/              # Card components
+│   │   ├── dashboard-card.ejs
+│   │   ├── stats-card.ejs
+│   │   └── stats-cards.ejs
+│   ├── forms/              # Form components
+│   │   ├── filter-card.ejs
+│   │   └── file-upload-form.ejs
+│   ├── feedback/           # Feedback components
+│   │   ├── alert-box.ejs
+│   │   └── empty-state.ejs
+│   ├── layout/             # Layout components
+│   │   └── page-hero.ejs
+│   ├── ui/                 # UI components
+│   │   ├── action-button.ejs
+│   │   ├── modal-dialog.ejs
+│   │   └── data-table.ejs
+│   └── (legacy)            # Legacy Bootstrap components
+│       ├── alert.ejs
+│       ├── file-upload.ejs
+│       ├── loading-button.ejs
+│       ├── loading-spinner.ejs
+│       └── page-header.ejs
+├── docs/                   # Documentation
+├── scripts/                # Helper scripts
 └── package.json
 ```
 
@@ -122,20 +178,63 @@ reusable-ejs-components/
 
 ## 🌟 Examples
 
+### Dashboard Card
+```ejs
+<%- include('partials/components/cards/dashboard-card', {
+    title: 'Tasks',
+    description: 'Manage your tasks',
+    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+    link: '/tasks',
+    btnText: 'View Tasks',
+    showBadge: true,
+    badgeLabel: 'Updated'
+}) %>
+```
+
 ### Stats Card
 ```ejs
-<%- include('partials/components/stats-card', {
+<%- include('partials/components/cards/stats-card', {
     icon: '💰',
     label: 'Revenue',
     value: '$12,345',
-    color: '#28a745',
-    valueColor: '#155724'
+    bgColor: 'bg-green-50',
+    iconColor: 'text-green-600'
 }) %>
+```
+
+### Filter Card
+```ejs
+<%- include('partials/components/forms/filter-card', {
+    title: 'Search Filters',
+    action: '/search',
+    method: 'GET',
+    submitText: 'Apply Filters',
+    isOpen: true
+}) %>
+<div slot="filters">
+    <input type="text" name="q" placeholder="Search..." class="input input-bordered w-full">
+</div>
+<%- include('partials/components/forms/filter-card-end') %>
+```
+
+### Modal Dialog
+```ejs
+<%- include('partials/components/ui/modal-dialog', {
+    id: 'confirmModal',
+    title: 'Confirm Action',
+    submitText: 'Confirm',
+    cancelText: 'Cancel',
+    onSubmit: 'handleConfirm()'
+}) %>
+<div slot="content">
+    <p>Are you sure you want to proceed?</p>
+</div>
+<%- include('partials/components/ui/modal-dialog-end') %>
 ```
 
 ### Data Table
 ```ejs
-<%- include('partials/components/data-table', {
+<%- include('partials/components/ui/data-table', {
     data: products,
     title: 'Product Inventory',
     maxHeight: '400px',
@@ -143,24 +242,42 @@ reusable-ejs-components/
 }) %>
 ```
 
-### Loading Button
+### Action Button
 ```ejs
-<%- include('partials/components/loading-button', {
-    id: 'submitBtn',
-    text: 'Submit',
-    loadingText: 'Processing...',
-    type: 'submit',
-    cssClass: 'btn-primary'
+<%- include('partials/components/ui/action-button', {
+    text: 'Add New',
+    icon: 'M12 4v16m8-8H4',
+    href: '/add',
+    variant: 'primary',
+    size: 'md'
 }) %>
 ```
 
-### File Upload Form
+### Page Hero
 ```ejs
-<%- include('partials/components/file-upload-form', {
-    action: '/upload',
-    inputName: 'file',
-    accept: '.csv,.xlsx',
-    label: 'Upload Data File'
+<%- include('partials/components/layout/page-hero', {
+    title: 'Dashboard',
+    description: 'Welcome to your dashboard',
+    icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'
+}) %>
+```
+
+### Alert Box
+```ejs
+<%- include('partials/components/feedback/alert-box', {
+    type: 'success',
+    message: 'Operation completed successfully!'
+}) %>
+```
+
+### Empty State
+```ejs
+<%- include('partials/components/feedback/empty-state', {
+    icon: '📋',
+    title: 'No tasks found',
+    message: 'Get started by creating your first task',
+    actionText: 'Create Task',
+    actionUrl: '/tasks/new'
 }) %>
 ```
 
@@ -168,23 +285,45 @@ reusable-ejs-components/
 
 ## 🔧 Customization
 
-All components use standard CSS classes that you can override:
+All components use Tailwind CSS and DaisyUI classes. You can customize them using:
 
-```css
-/* Custom styles */
-.data-table {
-    border: 2px solid #333;
-}
-
-.stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.btn {
-    border-radius: 8px;
-    font-weight: bold;
+### Tailwind Configuration
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#your-color',
+      }
+    }
+  },
+  plugins: [require('daisyui')],
+  daisyui: {
+    themes: ['light', 'dark', 'cupcake']
+  }
 }
 ```
+
+### Custom CSS Overrides
+```css
+/* Custom styles */
+.card {
+    @apply shadow-xl;
+}
+
+.btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600;
+}
+```
+
+### Component Props
+Most components accept customization props:
+- `bgColor` - Background color classes (e.g., 'bg-blue-50')
+- `textColor` - Text color classes (e.g., 'text-gray-700')
+- `iconColor` - Icon color classes (e.g., 'text-blue-600')
+- `variant` - Button/component variants ('primary', 'secondary', etc.)
+- `size` - Size variants ('sm', 'md', 'lg')
 
 ---
 

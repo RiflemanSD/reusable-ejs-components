@@ -4,8 +4,8 @@
   // Optional: method, title, submitText, submitClass
   
   var filterMethod = typeof method !== 'undefined' ? method : 'GET';
-  var filterTitle = typeof title !== 'undefined' ? title : 'Φίλτρα';
-  var filterSubmitText = typeof submitText !== 'undefined' ? submitText : 'Αναζήτηση';
+  var filterTitle = typeof title !== 'undefined' ? title : 'Filters';
+  var filterSubmitText = typeof submitText !== 'undefined' ? submitText : 'Search';
   var filterSubmitClass = typeof submitClass !== 'undefined' ? submitClass : 'btn-primary';
 %>
 
@@ -70,11 +70,11 @@
           </svg>
           <%= filterSubmitText %>
         </button>
-        <a href="<%= action %>" class="btn btn-ghost gap-2">
+  <a href="<%= action %>" class="btn btn-ghost gap-2">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Καθαρισμός
+          Clear
         </a>
       </div>
     </form>

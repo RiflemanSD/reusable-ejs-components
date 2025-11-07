@@ -48,7 +48,7 @@
       </div>
       
       <!-- Actions or Stats -->
-      <% if (heroStats) { %>
+      <% if (heroStats && Array.isArray(heroStats) && heroStats.length > 0) { %>
         <div class="stats bg-white/10 backdrop-blur-sm shadow-xl border border-white/20">
           <% heroStats.forEach(function(stat) { %>
             <div class="stat">
