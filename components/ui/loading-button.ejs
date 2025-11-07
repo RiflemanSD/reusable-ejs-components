@@ -22,13 +22,13 @@ const btnSize = typeof size !== 'undefined' ? size : 'md';
 const btnIcon = typeof icon !== 'undefined' ? icon : '';
 const loadIcon = typeof loadingIcon !== 'undefined' ? loadingIcon : '⏳';
 const loadText = typeof loadingText !== 'undefined' ? loadingText : 'Loading...';
-const autoLoad = typeof autoLoad === 'undefined' || autoLoad;
-const fullWidth = typeof fullWidth !== 'undefined' && fullWidth;
+const shouldAutoLoad = typeof autoLoad === 'undefined' || autoLoad;
+const isFullWidth = typeof fullWidth !== 'undefined' && fullWidth;
 %>
 
 <button type="<%= btnType %>" 
         id="<%= id %>"
-        class="btn btn-<%= btnVariant %> btn-<%= btnSize %> <%= fullWidth ? 'w-full' : '' %> <%= typeof extraClass !== 'undefined' && extraClass ? extraClass : '' %>">
+        class="btn btn-<%= btnVariant %> btn-<%= btnSize %> <%= isFullWidth ? 'w-full' : '' %> <%= typeof extraClass !== 'undefined' && extraClass ? extraClass : '' %>">
   <span class="btn-content">
     <% if (btnIcon) { %><%= btnIcon %> <% } %><%= text %>
   </span>
@@ -38,7 +38,7 @@ const fullWidth = typeof fullWidth !== 'undefined' && fullWidth;
   </span>
 </button>
 
-<% if (autoLoad) { %>
+<% if (shouldAutoLoad) { %>
 <script>
   (function() {
     const btn = document.getElementById('<%= id %>');
