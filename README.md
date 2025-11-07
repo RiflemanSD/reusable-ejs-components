@@ -8,7 +8,7 @@ A professional component library for Express.js applications using EJS templatin
 
 ## 📦 What's Included
 
-13 production-ready EJS components organized by category:
+16 production-ready EJS components organized by category - **100% Tailwind + DaisyUI**:
 
 ### 🎴 Cards
 - **dashboard-card** - Versatile dashboard cards with badges and actions
@@ -18,22 +18,23 @@ A professional component library for Express.js applications using EJS templatin
 ### 📝 Forms
 - **filter-card** - Collapsible filter forms with search functionality
 - **file-upload-form** - Complete file upload forms with validation
+- **file-upload** - Advanced file upload with preview and size validation
 
 ### 💬 Feedback
 - **alert-box** - Alert messages with different severity levels
+- **alert** - DaisyUI alert component with dismissible option
 - **empty-state** - Placeholder for empty data states
+- **loading-spinner** - Loading spinners with overlay support
 
 ### 📐 Layout
 - **page-hero** - Page header with title, description, and actions
+- **page-header** - Full-featured page header with breadcrumbs
 
 ### 🎛️ UI Components
 - **action-button** - Buttons with icons and various styles
 - **modal-dialog** - Modal dialogs with customizable content
 - **data-table** - Dynamic data tables with sticky headers
-
-### ⚙️ Legacy Components (Bootstrap)
 - **loading-button** - Buttons with automatic loading states
-- **file-upload** - Basic file upload component
 
 ---
 
@@ -153,22 +154,21 @@ reusable-ejs-components/
 │   │   └── stats-cards.ejs
 │   ├── forms/              # Form components
 │   │   ├── filter-card.ejs
-│   │   └── file-upload-form.ejs
+│   │   ├── file-upload-form.ejs
+│   │   └── file-upload.ejs
 │   ├── feedback/           # Feedback components
 │   │   ├── alert-box.ejs
-│   │   └── empty-state.ejs
+│   │   ├── alert.ejs
+│   │   ├── empty-state.ejs
+│   │   └── loading-spinner.ejs
 │   ├── layout/             # Layout components
-│   │   └── page-hero.ejs
-│   ├── ui/                 # UI components
-│   │   ├── action-button.ejs
-│   │   ├── modal-dialog.ejs
-│   │   └── data-table.ejs
-│   └── (legacy)            # Legacy Bootstrap components
-│       ├── alert.ejs
-│       ├── file-upload.ejs
-│       ├── loading-button.ejs
-│       ├── loading-spinner.ejs
-│       └── page-header.ejs
+│   │   ├── page-hero.ejs
+│   │   └── page-header.ejs
+│   └── ui/                 # UI components
+│       ├── action-button.ejs
+│       ├── modal-dialog.ejs
+│       ├── data-table.ejs
+│       └── loading-button.ejs
 ├── docs/                   # Documentation
 ├── scripts/                # Helper scripts
 └── package.json
@@ -277,6 +277,73 @@ reusable-ejs-components/
     title: 'No tasks found',
     message: 'Get started by creating your first task',
     actionText: 'Create Task',
+    actionUrl: '/tasks/new'
+}) %>
+```
+
+### Alert (DaisyUI)
+```ejs
+<%- include('partials/components/feedback/alert', {
+    type: 'success',
+    title: 'Success!',
+    message: 'Your changes have been saved',
+    dismissible: true
+}) %>
+```
+
+### Loading Button
+```ejs
+<%- include('partials/components/ui/loading-button', {
+    id: 'submitBtn',
+    text: 'Submit Form',
+    loadingText: 'Saving...',
+    variant: 'primary',
+    size: 'lg',
+    icon: '💾'
+}) %>
+```
+
+### Loading Spinner
+```ejs
+<%- include('partials/components/feedback/loading-spinner', {
+    id: 'pageLoader',
+    message: 'Loading data...',
+    size: 'lg',
+    variant: 'spinner',
+    overlay: true
+}) %>
+```
+
+### File Upload
+```ejs
+<%- include('partials/components/forms/file-upload', {
+    inputId: 'fileUpload',
+    inputName: 'document',
+    title: 'Upload Document',
+    accept: '.pdf,.doc,.docx',
+    maxSize: 5,
+    showPreview: true,
+    helpText: 'Max file size: 5MB'
+}) %>
+```
+
+### Page Header (with Breadcrumbs)
+```ejs
+<%- include('partials/components/layout/page-header', {
+    title: 'User Settings',
+    subtitle: 'Manage your account preferences',
+    icon: '⚙️',
+    breadcrumb: [
+        { text: 'Home', href: '/' },
+        { text: 'Dashboard', href: '/dashboard' },
+        { text: 'Settings' }
+    ],
+    actions: [
+        { text: 'Save Changes', variant: 'primary', icon: '💾' },
+        { text: 'Cancel', variant: 'ghost', href: '/dashboard' }
+    ]
+}) %>
+```
     actionUrl: '/tasks/new'
 }) %>
 ```

@@ -1,0 +1,75 @@
+<%
+/**
+ * Loading Button Component - Tailwind + DaisyUI
+ * 
+ * Props:
+ * - id: Unique button ID - REQUIRED
+ * - text: Button text - REQUIRED
+ * - loadingText: Text to show while loading (default: "Loading...")
+ * - type: Button type (default: "submit")
+ * - variant: 'primary' | 'secondary' | 'accent' | 'ghost' | 'neutral' (default: 'primary')
+ * - size: 'xs' | 'sm' | 'md' | 'lg' (default: 'md')
+ * - icon: Emoji/icon before text (optional)
+ * - loadingIcon: Icon while loading (default: "⏳")
+ * - extraClass: Additional CSS classes
+ * - autoLoad: Auto-attach to form submit (default: true)
+ * - fullWidth: Make button full width (default: false)
+ */
+
+const btnType = typeof type !== 'undefined' ? type : 'submit';
+const btnVariant = typeof variant !== 'undefined' ? variant : 'primary';
+const btnSize = typeof size !== 'undefined' ? size : 'md';
+const btnIcon = typeof icon !== 'undefined' ? icon : '';
+const loadIcon = typeof loadingIcon !== 'undefined' ? loadingIcon : '⏳';
+const loadText = typeof loadingText !== 'undefined' ? loadingText : 'Loading...';
+const autoLoad = typeof autoLoad === 'undefined' || autoLoad;
+const fullWidth = typeof fullWidth !== 'undefined' && fullWidth;
+%>
+
+<button type="<%= btnType %>" 
+        id="<%= id %>"
+        class="btn btn-<%= btnVariant %> btn-<%= btnSize %> <%= fullWidth ? 'w-full' : '' %> <%= typeof extraClass !== 'undefined' && extraClass ? extraClass : '' %>">
+  <span class="btn-content">
+    <% if (btnIcon) { %><%= btnIcon %> <% } %><%= text %>
+  </span>
+  <span class="btn-loading hidden">
+    <span class="loading loading-spinner loading-<%= btnSize %>"></span>
+    <%= loadText %>
+  </span>
+</button>
+
+<% if (autoLoad) { %>
+<script>
+  (function() {
+    const btn = document.getElementById('<%= id %>');
+    if (btn && btn.form) {
+      btn.form.addEventListener('submit', function() {
+        btn.disabled = true;
+        btn.querySelector('.btn-content').classList.add('hidden');
+        btn.querySelector('.btn-loading').classList.remove('hidden');
+      });
+    }
+  })();
+</script>
+<% } %>
+
+<script>
+  // Global function to toggle loading state manually
+  if (typeof window.toggleLoadingButton === 'undefined') {
+    window.toggleLoadingButton = function(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        btn.disabled = loading;
+        const content = btn.querySelector('.btn-content');
+        const loadingEl = btn.querySelector('.btn-loading');
+        if (loading) {
+          content?.classList.add('hidden');
+          loadingEl?.classList.remove('hidden');
+        } else {
+          content?.classList.remove('hidden');
+          loadingEl?.classList.add('hidden');
+        }
+      }
+    };
+  }
+</script>

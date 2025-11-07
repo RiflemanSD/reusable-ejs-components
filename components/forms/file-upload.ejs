@@ -1,0 +1,133 @@
+<%
+/**
+ * File Upload Component - Tailwind + DaisyUI
+ * 
+ * Props:
+ * - inputId: Unique input ID - REQUIRED
+ * - inputName: Input name attribute - REQUIRED
+ * - title: Upload section title (default: 'Select File')
+ * - buttonText: Button text (default: 'Choose File')
+ * - accept: Accepted file types (default: '.csv,.xlsx,.xls')
+ * - required: Make field required (default: false)
+ * - onChange: Custom onChange handler (optional)
+ * - helpText: Help text below button (optional)
+ * - multiple: Allow multiple files (default: false)
+ * - maxSize: Max file size in MB for validation (optional)
+ * - showPreview: Show file preview for images (default: false)
+ */
+
+const uploadTitle = typeof title !== 'undefined' ? title : 'Select File';
+const btnText = typeof buttonText !== 'undefined' ? buttonText : 'Choose File';
+const acceptTypes = typeof accept !== 'undefined' ? accept : '.csv,.xlsx,.xls';
+const isRequired = typeof required !== 'undefined' && required;
+const isMultiple = typeof multiple !== 'undefined' && multiple;
+const hasPreview = typeof showPreview !== 'undefined' && showPreview;
+%>
+
+<div class="card bg-base-100 border border-base-300">
+  <div class="card-body text-center">
+    <h3 class="card-title justify-center text-lg"><%= uploadTitle %></h3>
+    
+    <div class="form-control w-full">
+      <input 
+        type="file" 
+        id="<%= inputId %>" 
+        name="<%= inputName %>" 
+        accept="<%= acceptTypes %>"
+        class="file-input file-input-bordered file-input-primary w-full max-w-xs mx-auto hidden"
+        <% if (isRequired) { %>required<% } %>
+        <% if (isMultiple) { %>multiple<% } %>
+        <% if (typeof onChange !== 'undefined' && onChange) { %>onchange="<%= onChange %>"<% } %>
+      >
+      
+      <label for="<%= inputId %>" class="btn btn-primary gap-2 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <span id="<%= inputId %>Label"><%= btnText %></span>
+      </label>
+    </div>
+    
+    <div id="<%= inputId %>Info" class="hidden mt-4">
+      <div class="alert alert-info">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <div class="text-sm font-medium">Selected: <span id="<%= inputId %>Name"></span></div>
+          <div class="text-xs opacity-75">Size: <span id="<%= inputId %>Size"></span></div>
+        </div>
+      </div>
+    </div>
+    
+    <% if (hasPreview) { %>
+      <div id="<%= inputId %>Preview" class="hidden mt-4">
+        <img id="<%= inputId %>PreviewImg" class="max-w-xs mx-auto rounded-lg shadow-md" alt="File preview">
+      </div>
+    <% } %>
+    
+    <% if (typeof helpText !== 'undefined' && helpText) { %>
+      <div class="label">
+        <span class="label-text-alt text-base-content/60"><%= helpText %></span>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+(function() {
+  const input = document.getElementById('<%= inputId %>');
+  const label = document.getElementById('<%= inputId %>Label');
+  const info = document.getElementById('<%= inputId %>Info');
+  const fileName = document.getElementById('<%= inputId %>Name');
+  const fileSize = document.getElementById('<%= inputId %>Size');
+  <% if (hasPreview) { %>
+  const preview = document.getElementById('<%= inputId %>Preview');
+  const previewImg = document.getElementById('<%= inputId %>PreviewImg');
+  <% } %>
+  
+  input.addEventListener('change', function(e) {
+    const files = e.target.files;
+    
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      <% if (typeof maxSize !== 'undefined') { %>
+      // Validate file size
+      const maxSizeMB = <%= maxSize %>;
+      const fileSizeMB = file.size / 1024 / 1024;
+      if (fileSizeMB > maxSizeMB) {
+        alert(`File size (${fileSizeMB.toFixed(2)}MB) exceeds maximum allowed size (${maxSizeMB}MB)`);
+        input.value = '';
+        return;
+      }
+      <% } %>
+      
+      label.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> File Selected';
+      fileName.textContent = files.length > 1 ? `${files.length} files` : file.name;
+      fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+      info.classList.remove('hidden');
+      
+      <% if (hasPreview) { %>
+      // Show image preview
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.add('hidden');
+      }
+      <% } %>
+    } else {
+      label.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg> <%= btnText %>';
+      info.classList.add('hidden');
+      <% if (hasPreview) { %>
+      preview.classList.add('hidden');
+      <% } %>
+    }
+  });
+})();
+</script>

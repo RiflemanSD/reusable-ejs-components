@@ -1,0 +1,44 @@
+<%
+/**
+ * Loading Spinner Component - Tailwind + DaisyUI
+ * 
+ * Props:
+ * - id: Element ID (default: 'loadingSpinner')
+ * - message: Loading message (default: 'Please wait...')
+ * - size: 'xs' | 'sm' | 'md' | 'lg' (default: 'lg')
+ * - variant: 'spinner' | 'dots' | 'ring' | 'ball' | 'bars' | 'infinity' (default: 'spinner')
+ * - overlay: Show as full-screen overlay (default: false)
+ * - hidden: Initially hidden (default: true)
+ */
+
+const spinnerId = typeof id !== 'undefined' ? id : 'loadingSpinner';
+const spinnerMsg = typeof message !== 'undefined' ? message : 'Please wait...';
+const spinnerSize = typeof size !== 'undefined' ? size : 'lg';
+const spinnerVariant = typeof variant !== 'undefined' ? variant : 'spinner';
+const isOverlay = typeof overlay !== 'undefined' && overlay;
+const isHidden = typeof hidden === 'undefined' || hidden;
+%>
+
+<div id="<%= spinnerId %>" 
+     class="<%= isOverlay ? 'fixed inset-0 bg-base-300/80 flex items-center justify-center z-50' : 'flex flex-col items-center justify-center p-4' %>"
+     <% if (isHidden) { %>style="display: none;"<% } %>>
+  <div class="flex flex-col items-center gap-4">
+    <span class="loading loading-<%= spinnerVariant %> loading-<%= spinnerSize %> text-primary"></span>
+    <p class="text-base-content/70"><%= spinnerMsg %></p>
+  </div>
+</div>
+
+<script>
+  // Global helper functions for loading spinner
+  if (typeof window.showLoading === 'undefined') {
+    window.showLoading = function(spinnerId = 'loadingSpinner') {
+      const spinner = document.getElementById(spinnerId);
+      if (spinner) spinner.style.display = '';
+    };
+    
+    window.hideLoading = function(spinnerId = 'loadingSpinner') {
+      const spinner = document.getElementById(spinnerId);
+      if (spinner) spinner.style.display = 'none';
+    };
+  }
+</script>

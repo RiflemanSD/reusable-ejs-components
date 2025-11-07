@@ -1,0 +1,67 @@
+<%
+/**
+ * Alert Component - Tailwind + DaisyUI
+ * 
+ * Props:
+ * - type: 'info' | 'success' | 'warning' | 'error' (default: 'info')
+ * - message: Alert message text - REQUIRED
+ * - title: Optional alert title
+ * - details: Optional additional details (smaller text)
+ * - icon: Custom icon/emoji (auto-selected if not provided)
+ * - dismissible: Boolean - show close button (default: false)
+ * - id: Optional element ID
+ * - hidden: Boolean - initially hidden (default: false)
+ * - extraClass: Additional CSS classes
+ */
+
+const alertType = typeof type !== 'undefined' ? type : 'info';
+const alertClass = alertType === 'error' ? 'alert-error' :
+                   alertType === 'success' ? 'alert-success' :
+                   alertType === 'warning' ? 'alert-warning' :
+                   'alert-info';
+
+const iconMap = {
+  'error': '❌',
+  'success': '✅',
+  'warning': '⚠️',
+  'info': 'ℹ️'
+};
+
+const alertIcon = typeof icon !== 'undefined' && icon ? icon : iconMap[alertType] || 'ℹ️';
+const isDismissible = typeof dismissible !== 'undefined' && dismissible;
+const isHidden = typeof hidden !== 'undefined' && hidden;
+%>
+
+<div role="alert" 
+     class="alert <%= alertClass %> <%= isDismissible ? 'pr-12' : '' %> <%= typeof extraClass !== 'undefined' && extraClass ? extraClass : '' %>"
+     <% if (typeof id !== 'undefined' && id) { %>id="<%= id %>"<% } %>
+     <% if (isHidden) { %>style="display: none;"<% } %>>
+  
+  <div class="flex-1">
+    <% if (typeof title !== 'undefined' && title) { %>
+      <h3 class="font-bold flex items-center gap-2">
+        <span><%= alertIcon %></span>
+        <span><%= title %></span>
+      </h3>
+      <div class="text-sm"><%= message %></div>
+    <% } else { %>
+      <div class="flex items-center gap-2">
+        <span><%= alertIcon %></span>
+        <span><%= message %></span>
+      </div>
+    <% } %>
+    
+    <% if (typeof details !== 'undefined' && details) { %>
+      <div class="text-xs opacity-80 mt-2"><%= details %></div>
+    <% } %>
+  </div>
+  
+  <% if (isDismissible) { %>
+    <button type="button" 
+            class="btn btn-ghost btn-sm btn-circle absolute right-2 top-2"
+            aria-label="Close"
+            onclick="this.closest('.alert').style.display='none'">
+      ✕
+    </button>
+  <% } %>
+</div>

@@ -1,0 +1,80 @@
+<%
+/**
+ * Page Header Component - Tailwind + DaisyUI
+ * 
+ * Props:
+ * - title: Page title - REQUIRED
+ * - subtitle: Optional subtitle text
+ * - icon: SVG path or emoji for title icon (optional)
+ * - breadcrumb: Array of {text, href} objects (optional)
+ * - actions: Array of action button props (optional)
+ * - centered: Center align content (default: true)
+ * - bgColor: Background color class (default: 'bg-base-200')
+ * - compact: Smaller padding (default: false)
+ */
+
+const isCentered = typeof centered === 'undefined' || centered;
+const bgColor = typeof bgColor !== 'undefined' ? bgColor : 'bg-base-200';
+const isCompact = typeof compact !== 'undefined' && compact;
+const hasBreadcrumb = typeof breadcrumb !== 'undefined' && breadcrumb && breadcrumb.length > 0;
+const hasActions = typeof actions !== 'undefined' && actions && actions.length > 0;
+%>
+
+<div class="<%= bgColor %> <%= isCompact ? 'py-4' : 'py-8' %>">
+  <div class="container mx-auto px-4">
+    <div class="<%= isCentered ? 'text-center' : '' %>">
+      
+      <!-- Breadcrumbs -->
+      <% if (hasBreadcrumb) { %>
+        <div class="breadcrumbs <%= isCentered ? 'justify-center' : '' %> text-sm mb-4">
+          <ul>
+            <% breadcrumb.forEach((item, index) => { %>
+              <li>
+                <% if (item.href && index < breadcrumb.length - 1) { %>
+                  <a href="<%= item.href %>" class="link link-hover"><%= item.text %></a>
+                <% } else { %>
+                  <span class="<%= index === breadcrumb.length - 1 ? 'font-semibold' : '' %>"><%= item.text %></span>
+                <% } %>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+      
+      <!-- Title -->
+      <h1 class="text-4xl font-bold flex items-center gap-3 <%= isCentered ? 'justify-center' : '' %>">
+        <% if (typeof icon !== 'undefined' && icon) { %>
+          <% if (icon.startsWith('<') || icon.startsWith('M')) { %>
+            <!-- SVG Icon -->
+            <div class="bg-primary text-primary-content rounded-full p-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= icon %>" />
+              </svg>
+            </div>
+          <% } else { %>
+            <!-- Emoji Icon -->
+            <span class="text-5xl"><%= icon %></span>
+          <% } %>
+        <% } %>
+        <span><%= title %></span>
+      </h1>
+      
+      <!-- Subtitle -->
+      <% if (typeof subtitle !== 'undefined' && subtitle) { %>
+        <p class="text-lg text-base-content/70 mt-3 max-w-2xl <%= isCentered ? 'mx-auto' : '' %>">
+          <%= subtitle %>
+        </p>
+      <% } %>
+      
+      <!-- Actions -->
+      <% if (hasActions) { %>
+        <div class="mt-6 flex gap-2 <%= isCentered ? 'justify-center' : '' %> flex-wrap">
+          <% actions.forEach(action => { %>
+            <%- include('../ui/action-button', action) %>
+          <% }) %>
+        </div>
+      <% } %>
+      
+    </div>
+  </div>
+</div>
