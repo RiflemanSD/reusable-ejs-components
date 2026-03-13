@@ -1,0 +1,72 @@
+<%
+  const itemsList = Array.isArray(items) ? items : [];
+  const cols = Array.isArray(columns) ? columns : [];
+  const linkCandidates = Array.isArray(linkColumnCandidates) && linkColumnCandidates.length > 0
+    ? linkColumnCandidates
+    : ['name', 'sku', 'id'];
+  const normalizedCandidates = linkCandidates.map((col) => String(col).toLowerCase());
+  const basePath = typeof actionBasePath === 'string' ? actionBasePath : '';
+  const actionText = actionLabel || 'Άνοιγμα';
+  const encodedReturnTo = typeof returnTo === 'string' ? returnTo : '';
+  const resolvedLinkColumn = cols.find((col) => normalizedCandidates.includes(String(col).toLowerCase()));
+
+  function formatCell(columnName, value) {
+    if ((columnName.includes('price') || columnName.includes('cost')) && value !== null && value !== undefined && value !== '' && !isNaN(value)) {
+      return `EUR ${parseFloat(value).toFixed(2)}`;
+    }
+    return value !== null && value !== undefined ? String(value) : '';
+  }
+
+  function buildItemUrl(item) {
+    if (!basePath || item.id === null || item.id === undefined) {
+      return '';
+    }
+    return encodedReturnTo ? `${basePath}/${item.id}?returnTo=${encodedReturnTo}` : `${basePath}/${item.id}`;
+  }
+%>
+
+<div class="overflow-x-auto">
+  <table class="table table-zebra w-full">
+    <thead>
+      <tr>
+        <% cols.forEach((col) => { %>
+          <th><%= col %></th>
+        <% }) %>
+        <% if (basePath) { %>
+          <th>Ενέργεια</th>
+        <% } %>
+      </tr>
+    </thead>
+    <tbody>
+      <% itemsList.forEach((item) => {
+        const itemUrl = buildItemUrl(item);
+      %>
+        <tr>
+          <% cols.forEach((col) => {
+            const cellText = formatCell(col, item[col]);
+            const isLinkCol = resolvedLinkColumn && String(col).toLowerCase() === String(resolvedLinkColumn).toLowerCase() && itemUrl;
+          %>
+            <td>
+              <% if (isLinkCol) { %>
+                <a href="<%= itemUrl %>" class="link link-primary font-medium"><%= cellText %></a>
+              <% } else { %>
+                <%= cellText %>
+              <% } %>
+            </td>
+          <% }) %>
+          <% if (basePath) { %>
+            <td>
+              <% if (itemUrl) { %>
+                <a href="<%= itemUrl %>" class="btn btn-xs btn-outline btn-primary"><%= actionText %></a>
+              <% } %>
+            </td>
+          <% } %>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="text-sm text-gray-600 mt-2">
+    📊 <%= Number(totalItems || 0).toLocaleString() %> συνολικά <%= summaryLabel || 'στοιχεία' %> - <%= cols.length %> στήλες
+  </div>
+</div>
