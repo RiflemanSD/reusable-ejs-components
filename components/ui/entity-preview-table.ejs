@@ -7,6 +7,7 @@
   const normalizedCandidates = linkCandidates.map((col) => String(col).toLowerCase());
   const basePath = typeof actionBasePath === 'string' ? actionBasePath : '';
   const actionText = actionLabel || 'Άνοιγμα';
+  const itemIdentifierKey = typeof identifierKey === 'string' && identifierKey ? identifierKey : 'id';
   const encodedReturnTo = typeof returnTo === 'string' ? returnTo : '';
   const resolvedLinkColumn = cols.find((col) => normalizedCandidates.includes(String(col).toLowerCase()));
 
@@ -18,10 +19,12 @@
   }
 
   function buildItemUrl(item) {
-    if (!basePath || item.id === null || item.id === undefined) {
+    const itemIdentifier = item[itemIdentifierKey];
+    if (!basePath || itemIdentifier === null || itemIdentifier === undefined) {
       return '';
     }
-    return encodedReturnTo ? `${basePath}/${item.id}?returnTo=${encodedReturnTo}` : `${basePath}/${item.id}`;
+    const encodedItemId = encodeURIComponent(String(itemIdentifier));
+    return encodedReturnTo ? `${basePath}/${encodedItemId}?returnTo=${encodedReturnTo}` : `${basePath}/${encodedItemId}`;
   }
 %>
 

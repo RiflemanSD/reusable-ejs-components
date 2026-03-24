@@ -7,26 +7,33 @@
   const priceKey = cfg.priceKey || 'normal_price';
   const availabilityKey = cfg.availabilityKey || 'availability';
   const imageKey = cfg.imageKey || 'image_url';
+  const identifierKey = cfg.identifierKey || 'id';
   const basePath = cfg.basePath || '';
   const actionLabel = cfg.actionLabel || 'Open';
   const summaryLabel = cfg.summaryLabel || 'records';
   const emptyMessage = cfg.emptyMessage || 'Δεν βρέθηκαν δεδομένα';
+  const showAvailability = cfg.showAvailability !== false;
+  const metricKey = cfg.metricKey || priceKey;
   const encodedReturnTo = typeof returnTo === 'string' ? returnTo : '';
 
-  function formatPrice(value) {
+  function formatMetric(key, value) {
     if (value === null || value === undefined || value === '') {
       return '';
     }
     const num = Number(value);
-    return Number.isFinite(num) ? `EUR ${num.toFixed(2)}` : '';
+    if (Number.isFinite(num) && (String(key).includes('price') || String(key).includes('cost'))) {
+      return `EUR ${num.toFixed(2)}`;
+    }
+    return String(value);
   }
 
   function buildItemUrl(item) {
-    const itemId = item.id;
+    const itemId = item[identifierKey];
     if (!basePath || itemId === null || itemId === undefined) {
       return '';
     }
-    return encodedReturnTo ? `${basePath}/${itemId}?returnTo=${encodedReturnTo}` : `${basePath}/${itemId}`;
+    const encodedItemId = encodeURIComponent(String(itemId));
+    return encodedReturnTo ? `${basePath}/${encodedItemId}?returnTo=${encodedReturnTo}` : `${basePath}/${encodedItemId}`;
   }
 
   function getAvailabilityBadge(value) {
@@ -48,11 +55,11 @@
     <% itemsList.forEach((item) => {
       const badgeValue = item[badgeKey];
       const subtitleValue = item[subtitleKey];
-      const priceValue = formatPrice(item[priceKey]);
+      const metricValue = formatMetric(metricKey, item[metricKey]);
       const availability = getAvailabilityBadge(item[availabilityKey]);
       const imageValue = item[imageKey];
       const itemUrl = buildItemUrl(item);
-      const titleValue = item[titleKey] || `#${item.id}`;
+      const titleValue = item[titleKey] || `#${item[identifierKey]}`;
     %>
       <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow border border-base-300">
         <div class="card-body p-4">
@@ -72,15 +79,17 @@
                 <% if (badgeValue) { %>
                   <span class="badge badge-primary badge-sm"><%= badgeKey %>: <%= badgeValue %></span>
                 <% } %>
-                <span class="badge <%= availability.cls %> badge-sm"><%= availability.text %></span>
+                <% if (showAvailability) { %>
+                  <span class="badge <%= availability.cls %> badge-sm"><%= availability.text %></span>
+                <% } %>
               </div>
               <div class="text-sm text-base-content/70 mb-1"><%= subtitleValue || `Χωρίς ${subtitleKey}` %></div>
-              <div class="text-sm font-semibold text-success"><%= priceValue || 'Χωρίς τιμή' %></div>
+              <div class="text-sm font-semibold text-success"><%= metricValue || `Χωρίς ${metricKey}` %></div>
             </div>
 
             <% if (itemUrl) { %>
               <div class="shrink-0 min-w-[110px] flex justify-end">
-                <a href="<%= itemUrl %>" class="btn btn-primary btn-sm w-full">Άνοιγμα</a>
+                <a href="<%= itemUrl %>" class="btn btn-primary btn-sm w-full"><%= actionLabel %></a>
               </div>
             <% } %>
           </div>
