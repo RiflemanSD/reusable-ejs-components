@@ -13,6 +13,9 @@
   const summaryLabel = cfg.summaryLabel || 'records';
   const emptyMessage = cfg.emptyMessage || 'Δεν βρέθηκαν δεδομένα';
   const showAvailability = cfg.showAvailability !== false;
+  const showImage = cfg.showImage !== false;
+  const badgeVariant = cfg.badgeVariant || 'primary';
+  const badgeLabel = cfg.badgeLabel !== undefined ? cfg.badgeLabel : badgeKey;
   const metricKey = cfg.metricKey || priceKey;
   const encodedReturnTo = typeof returnTo === 'string' ? returnTo : '';
 
@@ -64,6 +67,7 @@
       <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow border border-base-300">
         <div class="card-body p-4">
           <div class="flex gap-4 items-start">
+            <% if (showImage) { %>
             <div class="w-28 h-24 shrink-0 rounded-lg border border-dashed border-base-300 bg-base-200 flex items-center justify-center text-center px-2">
               <div>
                 <div class="text-xs font-semibold text-base-content/70">
@@ -72,12 +76,13 @@
                 <div class="text-[11px] text-base-content/50">Future image</div>
               </div>
             </div>
+            <% } %>
 
             <div class="flex-1 min-w-0">
               <h3 class="card-title text-base mb-2 line-clamp-2"><%= titleValue %></h3>
               <div class="flex flex-wrap items-center gap-2 mb-2">
                 <% if (badgeValue) { %>
-                  <span class="badge badge-primary badge-sm"><%= badgeKey %>: <%= badgeValue %></span>
+                  <span class="badge badge-<%= badgeVariant %> badge-sm"><%= badgeLabel %>: <%= badgeValue %></span>
                 <% } %>
                 <% if (showAvailability) { %>
                   <span class="badge <%= availability.cls %> badge-sm"><%= availability.text %></span>
