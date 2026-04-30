@@ -1,6 +1,7 @@
 <%
   const itemsList = Array.isArray(items) ? items : [];
   const cfg = cardConfig || {};
+  const cardPartial = cfg.cardPartial || null; // Optional: path to entity-specific card template
   const titleKey = cfg.titleKey || 'name';
   const badgeKey = cfg.badgeKey || 'sku';
   const subtitleKey = cfg.subtitleKey || 'manufacturer';
@@ -17,6 +18,9 @@
   const badgeVariant = cfg.badgeVariant || 'primary';
   const badgeLabel = cfg.badgeLabel !== undefined ? cfg.badgeLabel : badgeKey;
   const metricKey = cfg.metricKey || priceKey;
+  const statusKey = cfg.statusKey !== undefined ? cfg.statusKey : 'status';
+  const siteKey = cfg.siteKey || null;
+  const magBaseUrl = cfg.magBaseUrl || null;
   const encodedReturnTo = typeof returnTo === 'string' ? returnTo : '';
 
   function formatMetric(key, value) {
@@ -63,8 +67,12 @@
       const imageValue = item[imageKey];
       const itemUrl = buildItemUrl(item);
       const titleValue = item[titleKey] || `#${item[identifierKey]}`;
+      const isDisabled = statusKey && item[statusKey] === false;
     %>
-      <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow border border-base-300">
+      <% if (cardPartial) { %>
+        <%- include(cardPartial, { item, cfg, itemUrl, titleValue, isDisabled, encodedReturnTo }) %>
+      <% } else { %>
+      <div class="card shadow hover:shadow-lg transition-shadow border <%= isDisabled ? 'bg-base-200 border-base-content/30 opacity-75' : 'bg-base-100 border-base-300' %>">
         <div class="card-body p-4">
           <div class="flex gap-4 items-start">
             <% if (showImage) { %>
@@ -79,10 +87,13 @@
             <% } %>
 
             <div class="flex-1 min-w-0">
-              <h3 class="card-title text-base mb-2 line-clamp-2"><%= titleValue %></h3>
+              <h3 class="text-base font-normal mb-2 line-clamp-2"><%= titleValue %></h3>
               <div class="flex flex-wrap items-center gap-2 mb-2">
                 <% if (badgeValue) { %>
-                  <span class="badge badge-<%= badgeVariant %> badge-sm"><%= badgeLabel %>: <%= badgeValue %></span>
+                  <span class="text-base-content/60"><%= badgeLabel %>:</span> <span class="text-base font-bold text-base-content"><%= badgeValue %></span>
+                <% } %>
+                <% if (isDisabled) { %>
+                  <span class="badge badge-ghost badge-sm text-base-content/50">Disabled</span>
                 <% } %>
                 <% if (showAvailability) { %>
                   <span class="badge <%= availability.cls %> badge-sm"><%= availability.text %></span>
@@ -92,16 +103,40 @@
               <div class="text-sm font-semibold text-success"><%= metricValue || `Χωρίς ${metricKey}` %></div>
             </div>
 
-            <% if (itemUrl) { %>
-              <div class="shrink-0 min-w-[110px] flex justify-end">
-                <a href="<%= itemUrl %>" class="btn btn-primary btn-sm w-full"><%= actionLabel %></a>
+            <% if (itemUrl || (item.csvRowNumber !== undefined && item.snapshotId)) { %>
+              <div class="shrink-0 min-w-[110px] flex flex-col gap-1 justify-end">
+                <% if (itemUrl) { %>
+                  <a href="<%= itemUrl %>" class="btn btn-primary btn-sm w-full"><%= actionLabel %></a>
+                <% } %>
+                <% if (siteKey && item[siteKey]) { %>
+                  <a href="<%= item[siteKey] %>" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm w-full">Frigo</a>
+                <% } %>
+                <% if (magBaseUrl) { %>
+                  <a href="<%= magBaseUrl %><%= item[identifierKey] %>" target="_blank" rel="noopener noreferrer" class="btn btn-sm w-full text-white" style="background-color:#f97316;border-color:#f97316;">Mag</a>
+                <% } %>
+                <% if (item.csvRowNumber !== undefined && item.snapshotId) { %>
+                  <form method="POST" action="/protimologia/copy-from-snapshot/<%= item.snapshotId %>" style="display:inline">
+                    <button type="submit" class="btn btn-warning btn-xs w-full mt-1" onclick="return confirm('Να μεταφερθεί το snapshot στη βάση και να ανοίξει για επεξεργασία;')">
+                      Μεταφορά & Επεξεργασία
+                    </button>
+                  </form>
+                <% } %>
               </div>
             <% } %>
           </div>
         </div>
       </div>
+      <% } /* end cardPartial else */ %>
     <% }) %>
   </div>
 
   <div class="text-sm text-gray-500 mt-2 px-2"><%= Number(totalItems || 0).toLocaleString() %> συνολικά <%= summaryLabel %></div>
+  <% if (typeof paginationLimit === 'number' && typeof paginationOffset === 'number') { %>
+    <%- include('./pagination', {
+      totalItems,
+      limit: paginationLimit,
+      offset: paginationOffset,
+      sectionId: typeof paginationSectionId === 'string' ? paginationSectionId : 'items'
+    }) %>
+  <% } %>
 <% } %>

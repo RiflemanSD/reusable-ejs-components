@@ -1,0 +1,62 @@
+<%
+/**
+ * Pagination Component
+ * Εμφανίζει pagination controls (Προηγούμενη / Επόμενη + page numbers).
+ *
+ * Params:
+ *   totalItems   {number}  - Συνολικός αριθμός εγγραφών
+ *   limit        {number}  - Εγγραφές ανά σελίδα
+ *   offset       {number}  - Τρέχον offset
+ *   sectionId    {string}  - Unique id prefix (π.χ. 'db', 'csv') για JS
+ */
+  const _totalItems = typeof totalItems === 'number' ? totalItems : 0;
+  const _limit = typeof limit === 'number' && limit > 0 ? limit : 100;
+  const _offset = typeof offset === 'number' && offset >= 0 ? offset : 0;
+  const _sectionId = typeof sectionId === 'string' ? sectionId : 'pagination';
+
+  const totalPages = Math.ceil(_totalItems / _limit) || 1;
+  const currentPage = Math.floor(_offset / _limit) + 1;
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  // Show max 5 page buttons around current
+  const maxButtons = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+  if (endPage - startPage < maxButtons - 1) {
+    startPage = Math.max(1, endPage - maxButtons + 1);
+  }
+%>
+
+<% if (totalPages > 1) { %>
+<div class="flex items-center justify-between flex-wrap gap-2 mt-3 pt-3 border-t border-base-300" data-pagination="<%= _sectionId %>">
+  <span class="text-sm text-base-content/60">
+    Σελίδα <strong><%= currentPage %></strong> από <strong><%= totalPages.toLocaleString('el-GR') %></strong>
+    (<%= _totalItems.toLocaleString('el-GR') %> συνολικά)
+  </span>
+  <div class="join">
+    <button
+      class="join-item btn btn-sm"
+      data-page-action="prev"
+      data-section="<%= _sectionId %>"
+      data-offset="<%= Math.max(0, _offset - _limit) %>"
+      <%= hasPrev ? '' : 'disabled' %>
+    >«</button>
+    <% for (let p = startPage; p <= endPage; p++) { %>
+      <button
+        class="join-item btn btn-sm <%= p === currentPage ? 'btn-active btn-primary' : '' %>"
+        data-page-action="goto"
+        data-section="<%= _sectionId %>"
+        data-offset="<%= (p - 1) * _limit %>"
+      ><%= p %></button>
+    <% } %>
+    <button
+      class="join-item btn btn-sm"
+      data-page-action="next"
+      data-section="<%= _sectionId %>"
+      data-offset="<%= _offset + _limit %>"
+      <%= hasNext ? '' : 'disabled' %>
+    >»</button>
+  </div>
+</div>
+<% } %>

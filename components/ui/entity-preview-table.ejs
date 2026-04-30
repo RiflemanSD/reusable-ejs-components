@@ -38,6 +38,9 @@
         <% if (basePath) { %>
           <th>Ενέργεια</th>
         <% } %>
+        <% if (Array.isArray(itemsList) && itemsList.length > 0 && itemsList[0].csvRowNumber !== undefined) { %>
+          <th>Μεταφορά</th>
+        <% } %>
       </tr>
     </thead>
     <tbody>
@@ -62,6 +65,15 @@
               <% if (itemUrl) { %>
                 <a href="<%= itemUrl %>" class="btn btn-xs btn-outline btn-primary"><%= actionText %></a>
               <% } %>
+            </td>
+          <% } %>
+          <% if (item.csvRowNumber !== undefined && item.snapshotId) { %>
+            <td>
+              <form method="POST" action="/protimologia/copy-from-snapshot/<%= item.snapshotId %>" style="display:inline">
+                <button type="submit" class="btn btn-xs btn-warning" onclick="return confirm('Να μεταφερθεί το snapshot στη βάση και να ανοίξει για επεξεργασία;')">
+                  Μεταφορά & Επεξεργασία
+                </button>
+              </form>
             </td>
           <% } %>
         </tr>
