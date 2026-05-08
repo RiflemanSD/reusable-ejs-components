@@ -8,6 +8,7 @@
   var heroActions = typeof actions !== 'undefined' ? actions : [];
   var heroStats = typeof stats !== 'undefined' ? stats : null;
   var heroWarning = typeof warning !== 'undefined' ? warning : null;
+  var heroCompact = typeof compact !== 'undefined' ? compact : false;
 %>
 
 <style>
@@ -15,7 +16,7 @@
 </style>
 
 <div class="bg-gradient-to-r <%= gradient %> shadow-lg border-b border-opacity-60">
-  <div class="container mx-auto px-6 py-8 hero-header">
+  <div class="container mx-auto px-6 <%= heroCompact ? 'py-4' : 'py-8' %> hero-header">
     <div class="flex items-center justify-between flex-wrap gap-6">
       <div class="flex items-center gap-4">
         <!-- Icon Container -->
