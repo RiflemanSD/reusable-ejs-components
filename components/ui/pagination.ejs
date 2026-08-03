@@ -32,7 +32,7 @@
 <div class="flex items-center justify-between flex-wrap gap-2 mt-3 pt-3 border-t border-base-300" data-pagination="<%= _sectionId %>">
   <span class="text-sm text-base-content/60">
     Σελίδα <strong><%= currentPage %></strong> από <strong><%= totalPages.toLocaleString('el-GR') %></strong>
-    (<%= _totalItems.toLocaleString('el-GR') %> συνολικά)
+    (<%= _totalItems.toLocaleString('el-GR') %> συνολικά<% if (typeof overdueCount === 'number') { %>, <strong class="text-warning"><%= overdueCount.toLocaleString('el-GR') %></strong> εκπρόθεσμα<% } %>)
   </span>
   <div class="join">
     <button
