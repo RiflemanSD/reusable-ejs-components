@@ -1,14 +1,35 @@
 <%
   // Filter Card Component - Form with filters for data filtering
   // Required: action, filters (array of filter objects)
-  // Optional: method, title, submitText, submitClass
+  // Optional: method, title, submitText, submitClass, collapsible
+  //   collapsible: true → το card γίνεται DaisyUI collapse (κλειστό by default,
+  //   με badge «N ενεργά» στον τίτλο όταν κάποιο φίλτρο έχει τιμή)
   
   var filterMethod = typeof method !== 'undefined' ? method : 'GET';
   var filterTitle = typeof title !== 'undefined' ? title : 'Filters';
   var filterSubmitText = typeof submitText !== 'undefined' ? submitText : 'Search';
   var filterSubmitClass = typeof submitClass !== 'undefined' ? submitClass : 'btn-primary';
+  var filterCollapsible = typeof collapsible !== 'undefined' && !!collapsible;
+  var filterActiveCount = (filters || []).filter(function(f) {
+    return f.value !== undefined && f.value !== null && String(f.value).trim() !== '';
+  }).length;
 %>
 
+<% if (filterCollapsible) { %>
+<div class="collapse collapse-arrow bg-base-100 shadow-lg mb-6">
+  <input type="checkbox" />
+  <div class="collapse-title text-lg font-medium flex items-center gap-2 flex-wrap">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+    </svg>
+    <%= filterTitle %>
+    <% if (filterActiveCount > 0) { %>
+      <span class="badge badge-primary badge-sm"><%= filterActiveCount %> ενεργά</span>
+    <% } %>
+  </div>
+  <div class="collapse-content">
+    <form method="<%= filterMethod %>" action="<%= action %>">
+<% } else { %>
 <div class="card bg-base-100 shadow-lg mb-6">
   <div class="card-body">
     <h2 class="card-title text-lg mb-4">
@@ -19,6 +40,7 @@
     </h2>
     
     <form method="<%= filterMethod %>" action="<%= action %>">
+<% } %>
       <div class="grid grid-cols-1 md:grid-cols-<%= Math.min(filters.length, 4) %> gap-4">
         <% filters.forEach(function(filter) { %>
           <div class="form-control">
@@ -78,5 +100,10 @@
         </a>
       </div>
     </form>
+<% if (filterCollapsible) { %>
   </div>
 </div>
+<% } else { %>
+  </div>
+</div>
+<% } %>
