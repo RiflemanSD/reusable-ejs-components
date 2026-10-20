@@ -1,0 +1,60 @@
+<%# components/workflow/status-filters.ejs
+ *
+ * Μπάρα φίλτρων για τη σελίδα «ανά κατάσταση» (BACKLOG F-9): κατάσταση, αναζήτηση, ημερομηνίες.
+ * GET form — η υποβολή γίνεται αυτόματα στα selects, με κουμπί για την αναζήτηση.
+ *
+ * Παράμετροι:
+ *   action    (required) — path της σελίδας (π.χ. '/workflow/orders')
+ *   filters   (required) — { status, q, from, to }
+ *   statuses  (required) — array από status objects (getStatuses(kind))
+ *   showDates (optional) — default true
+ *
+ * Χρήση: include('partials/components/workflow/status-filters', { action, filters, statuses })
+ %>
+<%
+  const _action    = typeof action !== 'undefined' && action ? action : '';
+  const _filters   = typeof filters !== 'undefined' && filters ? filters : {};
+  const _statuses  = typeof statuses !== 'undefined' && Array.isArray(statuses) ? statuses : [];
+  const _showDates = typeof showDates !== 'undefined' ? !!showDates : true;
+  const _formId    = 'wfFiltersForm';
+%>
+<form id="<%= _formId %>" method="GET" action="<%= _action %>" class="card bg-base-100 shadow mb-4">
+  <div class="card-body p-3">
+    <div class="flex flex-wrap items-end gap-2">
+      <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Κατάσταση</span></label>
+        <select name="status" class="select select-bordered select-sm w-56"
+                onchange="document.getElementById('<%= _formId %>').submit()">
+          <option value="" <%= !_filters.status ? 'selected' : '' %>>Ενεργά (εκτός τελικών)</option>
+          <option value="all" <%= _filters.status === 'all' ? 'selected' : '' %>>Όλα</option>
+          <option value="none" <%= _filters.status === 'none' ? 'selected' : '' %>>Χωρίς κατάσταση</option>
+          <% _statuses.forEach(function (s) { %>
+            <option value="<%= s.code %>" <%= _filters.status === s.code ? 'selected' : '' %>><%= s.emoji %> <%= s.label %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-control grow min-w-48">
+        <label class="label py-0"><span class="label-text text-xs">Αναζήτηση</span></label>
+        <input type="text" name="q" value="<%= _filters.q || '' %>" class="input input-bordered input-sm"
+               placeholder="Πελάτης, email, αριθμός…" />
+      </div>
+
+      <% if (_showDates) { %>
+        <div class="form-control">
+          <label class="label py-0"><span class="label-text text-xs">Από</span></label>
+          <input type="date" name="from" value="<%= _filters.from || '' %>" class="input input-bordered input-sm" />
+        </div>
+        <div class="form-control">
+          <label class="label py-0"><span class="label-text text-xs">Έως</span></label>
+          <input type="date" name="to" value="<%= _filters.to || '' %>" class="input input-bordered input-sm" />
+        </div>
+      <% } %>
+
+      <div class="flex items-center gap-2">
+        <button type="submit" class="btn btn-sm btn-primary">🔍 Φίλτρα</button>
+        <a href="<%= _action %>" class="btn btn-sm btn-ghost">Καθαρισμός</a>
+      </div>
+    </div>
+  </div>
+</form>

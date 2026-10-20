@@ -1,0 +1,55 @@
+<%# components/workflow/status-select.ejs
+ *
+ * Select αλλαγής κατάστασης workflow (BACKLOG F-9). Η αποστολή γίνεται AJAX από το
+ * `public/js/utils/workflow-status.js` (data-wf-* attributes) → POST /workflow/:kind/:id/status.
+ *
+ * Παράμετροι:
+ *   kind      (required) — 'order' | 'protimologia' | 'supplier_order'
+ *   entityId  (required) — το id της εγγραφής
+ *   current   (optional) — τρέχων κωδικός κατάστασης
+ *   statuses  (required) — array από status objects (getStatuses(kind))
+ *   label     (optional) — ετικέτα πάνω από το select
+ *   size      (optional) — 'xs' | 'sm' (default) | 'md'
+ *   reload    (optional) — true (default) για reload μετά την αλλαγή
+ *   withNote  (optional) — true για να ζητάει σημείωση (μέσω του modal του app)
+ *
+ * Χρήση: include('partials/components/workflow/status-select', { kind, entityId, current, statuses })
+ %>
+<%
+  const _kind     = typeof kind !== 'undefined' ? kind : '';
+  const _entityId = typeof entityId !== 'undefined' ? entityId : '';
+  const _current  = typeof current !== 'undefined' && current ? current : '';
+  const _statuses = typeof statuses !== 'undefined' && Array.isArray(statuses) ? statuses : [];
+  const _label    = typeof label !== 'undefined' && label ? label : '';
+  const _size     = typeof size !== 'undefined' && size ? size : 'sm';
+  const _reload   = typeof reload !== 'undefined' ? !!reload : true;
+  const _withNote = typeof withNote !== 'undefined' ? !!withNote : false;
+  const _historyBtn = typeof historyBtn !== 'undefined' ? !!historyBtn : true;
+  const _sizeClass = _size === 'md' ? 'select-md' : (_size === 'xs' ? 'select-xs' : 'select-sm');
+%>
+<% if (_kind && _entityId && _statuses.length) { %>
+<div class="<%= _label ? 'form-control' : '' %>" data-wf-note-scope>
+  <% if (_label) { %><label class="label py-0"><span class="label-text text-xs text-base-content/60"><%= _label %></span></label><% } %>
+  <div class="flex items-center gap-1 flex-wrap">
+    <select class="select select-bordered <%= _sizeClass %> w-full max-w-xs"
+            data-wf-kind="<%= _kind %>"
+            data-wf-id="<%= _entityId %>"
+            data-wf-reload="<%= _reload ? '1' : '0' %>"
+            data-wf-note="<%= _withNote ? '1' : '0' %>"
+            aria-label="Αλλαγή κατάστασης">
+      <% if (!_current) { %><option value="" disabled selected>— χωρίς κατάσταση —</option><% } %>
+      <% _statuses.forEach(function (s) { %>
+        <option value="<%= s.code %>" <%= s.code === _current ? 'selected' : '' %>><%= s.emoji %> <%= s.label %></option>
+      <% }); %>
+    </select>
+    <% if (_withNote) { %>
+      <input type="text" class="input input-bordered <%= _sizeClass === 'select-md' ? 'input-md' : (_sizeClass === 'select-xs' ? 'input-xs' : 'input-sm') %> w-full max-w-xs"
+             data-wf-note-input maxlength="500" placeholder="Σημείωση (προαιρετική)" aria-label="Σημείωση αλλαγής" />
+    <% } %>
+    <% if (_historyBtn) { %>
+    <button type="button" class="btn btn-ghost btn-xs wf-history-btn" title="Ιστορικό αλλαγών"
+            data-wf-kind="<%= _kind %>" data-wf-id="<%= _entityId %>">🕘</button>
+    <% } %>
+  </div>
+</div>
+<% } %>

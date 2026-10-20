@@ -1,0 +1,42 @@
+<%#
+  Μία γραμμή με δύο κάρτες δίπλα-δίπλα (BACKLOG F-9):
+    αριστερά  «🧾 Παραστατικά Soft1»  (partials/orders/soft1-docs-card.ejs)
+    δεξιά     «Δικό μας status»        (partials/components/workflow/status-card.ejs)
+
+  Πριν ήταν δύο στοιβαγμένες κάρτες (μία πάνω στην άλλη) στη φόρμα παραγγελίας και στη φόρμα
+  προτιμολογίου· τώρα μία γραμμή (σε στενή οθόνη πέφτουν η μία κάτω από την άλλη).
+
+  locals:
+    soft1Docs  (προαιρετικό) πίνακας παραστατικών — αν λείπει/null, η κάρτα δεν βγαίνει
+    workflow   (προαιρετικό) context κατάστασης (services/workflow/workflowService.js) — αν λείπει, δεν βγαίνει
+    entityId   id της εγγραφής (για το POST κατάστασης)
+    emptyText  (προαιρετικό) κείμενο «δεν βρέθηκε παραστατικό»
+    sourcesUrl (προαιρετικό) endpoint ζωντανού ελέγχου ΠΡΦ/ΠΑΛ
+-%>
+<%
+  const _docs = (typeof soft1Docs !== 'undefined' && Array.isArray(soft1Docs)) ? soft1Docs : null;
+  const _wf = (typeof workflow !== 'undefined' && workflow) ? workflow : null;
+  const _emptyText = (typeof emptyText !== 'undefined') ? emptyText : '';
+  const _sourcesUrl = (typeof sourcesUrl !== 'undefined') ? sourcesUrl : '';
+  const _count = (_docs ? 1 : 0) + (_wf ? 1 : 0);
+  const _grid = _count === 2 ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 items-stretch' : '';
+%>
+<% if (_count > 0) { %>
+<div class="<%= _grid %> mb-4">
+  <% if (_docs) { %>
+    <%- include('../../orders/soft1-docs-card', {
+      soft1Docs: _docs,
+      emptyText: _emptyText,
+      sourcesUrl: _sourcesUrl,
+      cardClass: _count === 2 ? 'h-full mb-0' : 'mb-4'
+    }) %>
+  <% } %>
+  <% if (_wf) { %>
+    <%- include('./status-card', {
+      ctx: _wf,
+      entityId: (typeof entityId !== 'undefined') ? entityId : '',
+      cardClass: _count === 2 ? 'h-full mb-0' : 'mb-4'
+    }) %>
+  <% } %>
+</div>
+<% } %>

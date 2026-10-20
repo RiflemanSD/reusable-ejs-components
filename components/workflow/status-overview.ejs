@@ -1,0 +1,86 @@
+<%# components/workflow/status-overview.ejs
+ *
+ * Στατιστικά + κάρτες καταστάσεων για τη σελίδα «ανά κατάσταση» (BACKLOG F-9).
+ * Κάθε κάρτα είναι σύνδεσμος `?status=κωδικός` → φιλτράρει τη λίστα (click-to-filter).
+ * Το μοτίβο ακολουθεί το `improvements.ejs` (stats strip) + το «Category Breakdown» των expenses.
+ *
+ * Παράμετροι:
+ *   basePath (required) — path σελίδας, π.χ. '/workflow/orders'
+ *   counts   (required) — από `workflowService.getCounts()`: { total, real, terminal, byStatus, statuses }
+ *   groups   (required) — από `groupSummaries(kind)`: [{ label, emoji, statuses: [...] }]
+ *   filters  (optional) — για να μαρκάρεται η ενεργή κατάσταση
+ *   showGroupTotals (optional) — default true
+ *
+ * Χρήση: include('partials/components/workflow/status-overview', { basePath, counts, groups, filters })
+ %>
+<%
+  const _basePath  = typeof basePath !== 'undefined' && basePath ? basePath : '';
+  const _counts    = typeof counts !== 'undefined' && counts ? counts : { total: 0, real: 0, terminal: 0, byStatus: {} };
+  const _groups    = typeof groups !== 'undefined' && Array.isArray(groups) ? groups : [];
+  const _filters   = typeof filters !== 'undefined' && filters ? filters : {};
+  const _active    = _filters.status || '';
+  const _byStatus  = _counts.byStatus || {};
+  const _cardBase  = 'bg-base-100 shadow rounded-box py-2 px-4 min-w-28 flex flex-col hover:bg-base-200 hover:shadow-md transition-colors cursor-pointer border-2';
+  // Πυκνή κάρτα κατάστασης για τη μία γραμμή (item 6): μικρή, χωρίς min-width, δεν τυλίγει.
+  const _cardSm    = 'bg-base-100 shadow-sm rounded-box py-1 px-2.5 shrink-0 flex items-center gap-1.5 whitespace-nowrap hover:bg-base-200 hover:shadow transition-colors cursor-pointer border-2';
+  const _cardIdle  = 'border-transparent';
+  const _cardOn    = 'border-primary';
+  const _textColor = function (tone) {
+    const map = {
+      'badge-info': 'text-info',
+      'badge-warning': 'text-warning',
+      'badge-secondary': 'text-secondary',
+      'badge-success': 'text-success',
+      'badge-error': 'text-error',
+      'badge-ghost': 'text-base-content'
+    };
+    return map[tone] || 'text-base-content';
+  };
+%>
+<div class="mb-4 space-y-3">
+
+  <!-- Σύνολα -->
+  <div class="flex flex-wrap items-center gap-2">
+    <a href="<%= _basePath %>?status=all"
+       class="<%= _cardBase %> <%= _active === 'all' ? _cardOn : _cardIdle %>">
+      <span class="text-xs text-base-content/60">Σύνολο</span>
+      <span class="text-lg font-bold"><%= (_counts.total || 0) + (_counts.none || 0) %></span>
+    </a>
+    <a href="<%= _basePath %>" 
+       class="<%= _cardBase %> <%= _active === '' ? _cardOn : _cardIdle %>">
+      <span class="text-xs text-base-content/60">Ενεργά</span>
+      <span class="text-lg font-bold text-info"><%= (_counts.total || 0) - (_counts.terminal || 0) + (_counts.none || 0) %></span>
+    </a>
+    <a href="<%= _basePath %>?status=none"
+       class="<%= _cardBase %> <%= _active === 'none' ? _cardOn : _cardIdle %>">
+      <span class="text-xs text-base-content/60">Χωρίς κατάσταση</span>
+      <span class="text-lg font-bold text-base-content/60"><%= _counts.none || 0 %></span>
+    </a>
+    <div class="<%= _cardBase %> <%= _cardIdle %> cursor-default hover:bg-base-100 hover:shadow">
+      <span class="text-xs text-base-content/60">🔒 Πραγματικές δεσμεύσεις</span>
+      <span class="text-lg font-bold text-success"><%= _counts.real || 0 %></span>
+    </div>
+    <div class="<%= _cardBase %> <%= _cardIdle %> cursor-default hover:bg-base-100 hover:shadow">
+      <span class="text-xs text-base-content/60">Τελικά</span>
+      <span class="text-lg font-bold text-base-content/50"><%= _counts.terminal || 0 %></span>
+    </div>
+  </div>
+
+  <!-- Κάρτες κατάστασης: ΟΛΕΣ σε ΜΙΑ γραμμή (οριζόντιο scroll όταν δεν χωράνε) -->
+  <div class="flex flex-nowrap items-stretch gap-1.5 overflow-x-auto pb-1">
+    <% _groups.forEach(function (g, gi) { %>
+      <% if (gi > 0) { %>
+        <span class="w-px shrink-0 self-stretch bg-base-300 mx-0.5" title="<%= g.label %>"></span>
+      <% } %>
+      <% g.statuses.forEach(function (s) { %>
+        <a href="<%= _basePath %>?status=<%= s.code %>"
+           class="<%= _cardSm %> <%= _active === s.code ? _cardOn : _cardIdle %>"
+           title="<%= g.label %> · <%= s.hint || s.label %>">
+          <span class="text-[11px] text-base-content/60 whitespace-nowrap"><%= s.emoji %> <%= s.label %></span>
+          <span class="text-sm font-bold tabular-nums <%= (_byStatus[s.code] || 0) > 0 ? _textColor(s.tone) : 'text-base-content/40' %>"><%= _byStatus[s.code] || 0 %></span>
+        </a>
+      <% }); %>
+    <% }); %>
+  </div>
+
+</div>

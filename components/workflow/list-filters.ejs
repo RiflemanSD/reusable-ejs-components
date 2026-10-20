@@ -1,0 +1,87 @@
+<%#
+  list-filters.ejs — ΚΟΙΝΟ φίλτρο λιστών: δικό μας status (BACKLOG F-9) + ημερομηνία + sort/limit.
+
+  Props (όλα προαιρετικά):
+    wfStatuses  (array)  καταστάσεις του είδους, π.χ. getStatuses('protimologia'). Αν λείπει/άδειο → δεν βγαίνει το select.
+    wstatus     (string) τρέχουσα τιμή: '' | 'none' | 'active' | κωδικός
+    datePreset  (string) '' | today | week | month | year
+    dateFrom    (string) YYYY-MM-DD
+    dateTo      (string) YYYY-MM-DD
+    dateTitle   (string) tooltip, π.χ. 'Ημερομηνία προτιμολογίου' (default 'Ημερομηνία')
+    showDates   (bool)   default true
+    sortOptions (array)  π.χ. [['id','ID'],['name','Όνομα'],['date','Ημ/νία']] — αν δοθεί, βγαίνουν τα sort selects
+    sortBy      (string)
+    sortDir     (string) 'asc' | 'desc'
+    limit       (number)
+    applyFn     (string) όνομα JS συνάρτησης που εφαρμόζει τα φίλτρα (default 'applyFilters')
+    showClear   (bool)   default true — κουμπί «Καθαρισμός» (καλεί clearFilters())
+
+  Το JS: `<script src="/js/utils/list-filters.js" defer></script>` + το μενού της σελίδας.
+  Χρώμα preset: btn-primary όταν ενεργό, btn-outline αλλιώς.
+%>
+<%
+  const _lfApply = (typeof applyFn !== 'undefined' && applyFn) ? applyFn : 'applyFilters';
+  const _lfStatuses = Array.isArray(wfStatuses) ? wfStatuses : [];
+  const _lfWstatus = typeof wstatus !== 'undefined' ? (wstatus || '') : '';
+  const _lfPreset = (typeof datePreset !== 'undefined' && datePreset) ? datePreset : '';
+  const _lfFrom = typeof dateFrom !== 'undefined' ? (dateFrom || '') : '';
+  const _lfTo = typeof dateTo !== 'undefined' ? (dateTo || '') : '';
+  const _lfDateTitle = (typeof dateTitle !== 'undefined' && dateTitle) ? dateTitle : 'Ημερομηνία';
+  const _lfShowDates = !(typeof showDates !== 'undefined' && showDates === false);
+  const _lfSortOptions = Array.isArray(sortOptions) ? sortOptions : null;
+  const _lfSortBy = typeof sortBy !== 'undefined' ? sortBy : '';
+  const _lfSortDir = typeof sortDir !== 'undefined' ? sortDir : 'desc';
+  const _lfLimit = typeof limit !== 'undefined' ? limit : 50;
+  const _lfShowClear = !(typeof showClear !== 'undefined' && showClear === false);
+%>
+<div class="flex gap-2 items-center flex-wrap text-sm">
+  <input type="hidden" id="datePreset" value="<%= _lfPreset %>" />
+
+  <% if (_lfStatuses.length) { %>
+  <select id="wstatusSel" class="select select-bordered select-xs max-w-56" onchange="<%= _lfApply %>()" title="Φίλτρο με το δικό μας status (BACKLOG F-9)">
+    <option value=""       <%- _lfWstatus === ''       ? 'selected' : '' %>>🗂️ Όλα τα status</option>
+    <option value="active" <%- _lfWstatus === 'active' ? 'selected' : '' %>>🔵 Ενεργά (όχι τελικά)</option>
+    <option value="none"   <%- _lfWstatus === 'none'   ? 'selected' : '' %>>⚪ Χωρίς κατάσταση</option>
+    <% _lfStatuses.forEach((st) => { %>
+    <option value="<%= st.code %>" <%- _lfWstatus === st.code ? 'selected' : '' %>><%= st.emoji %> <%= st.label %></option>
+    <% }) %>
+  </select>
+  <% } %>
+
+  <% if (_lfShowDates) { %>
+  <div class="join" title="Γρήγορο φίλτρο <%= _lfDateTitle.toLowerCase() %> (ξανά κλικ = κατάργηση)">
+    <% [['today', 'Σήμερα'], ['week', 'Εβδομάδα'], ['month', 'Μήνας'], ['year', 'Έτος']].forEach(([key, label]) => { %>
+    <button type="button" onclick="setDatePreset('<%= key %>')" class="join-item btn btn-xs <%= _lfPreset === key ? 'btn-primary' : 'btn-outline' %>"><%= label %></button>
+    <% }) %>
+  </div>
+  <label class="flex items-center gap-1" title="<%= _lfDateTitle %> από">
+    <span class="text-xs opacity-70">Από</span>
+    <input type="date" id="dateFrom" value="<%= _lfFrom %>" class="input input-bordered input-xs" onchange="onDateInputChange()" />
+  </label>
+  <label class="flex items-center gap-1" title="<%= _lfDateTitle %> έως (συμπεριλαμβάνεται)">
+    <span class="text-xs opacity-70">Έως</span>
+    <input type="date" id="dateTo" value="<%= _lfTo %>" class="input input-bordered input-xs" onchange="onDateInputChange()" />
+  </label>
+  <% } %>
+
+  <% if (_lfSortOptions) { %>
+  <select id="sortBy" class="select select-bordered select-xs" onchange="<%= _lfApply %>()">
+    <% _lfSortOptions.forEach(([value, label]) => { %>
+    <option value="<%= value %>" <%- String(_lfSortBy) === String(value) ? 'selected' : '' %>>Sort: <%= label %></option>
+    <% }) %>
+  </select>
+  <select id="sortDir" class="select select-bordered select-xs w-24" onchange="<%= _lfApply %>()">
+    <option value="desc" <%- _lfSortDir === 'desc' ? 'selected' : '' %>>DESC</option>
+    <option value="asc"  <%- _lfSortDir === 'asc'  ? 'selected' : '' %>>ASC</option>
+  </select>
+  <select id="limitSel" class="select select-bordered select-xs w-24" onchange="<%= _lfApply %>()">
+    <option value="25"  <%- Number(_lfLimit) === 25  ? 'selected' : '' %>>25 / σελ</option>
+    <option value="50"  <%- Number(_lfLimit) === 50  ? 'selected' : '' %>>50 / σελ</option>
+    <option value="100" <%- Number(_lfLimit) === 100 ? 'selected' : '' %>>100 / σελ</option>
+  </select>
+  <% } %>
+
+  <% if (_lfShowClear) { %>
+  <button type="button" onclick="clearFilters()" class="btn btn-xs btn-ghost text-error border border-error/40 hover:bg-error hover:text-white">Καθαρισμός</button>
+  <% } %>
+</div>

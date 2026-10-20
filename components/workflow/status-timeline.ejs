@@ -1,0 +1,52 @@
+<%# components/workflow/status-timeline.ejs
+ *
+ * Χρονολόγιο αλλαγών κατάστασης (BACKLOG F-9). Δέχεται το αποτέλεσμα του
+ * `workflowService.getHistory()` (νεότερα πρώτα) — δεν κάνει queries μόνο του.
+ *
+ * Παράμετροι:
+ *   items     (required) — array από { code, label, emoji, tone, prevLabel, note, changedBy, changedAt }
+ *   title     (optional) — τίτλος (default: 'Ιστορικό καταστάσεων')
+ *   emptyText (optional) — κείμενο όταν δεν υπάρχει ιστορικό
+ *   compact   (optional) — true για πιο πυκνή εμφάνιση (χωρίς card wrapper)
+ *
+ * Χρήση: include('partials/components/workflow/status-timeline', { items: history })
+ %>
+<%
+  const _items     = typeof items !== 'undefined' && Array.isArray(items) ? items : [];
+  const _title     = typeof title !== 'undefined' && title ? title : 'Ιστορικό καταστάσεων';
+  const _emptyText = typeof emptyText !== 'undefined' && emptyText ? emptyText : 'Δεν έχει καταγραφεί αλλαγή κατάστασης.';
+  const _compact   = typeof compact !== 'undefined' ? !!compact : false;
+  const _fmt = function (d) {
+    if (!d) return '';
+    try {
+      return new Date(d).toLocaleString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return String(d); }
+  };
+%>
+<div class="<%= _compact ? '' : 'card bg-base-100 shadow' %>">
+  <div class="<%= _compact ? '' : 'card-body p-4' %>">
+    <% if (_title) { %><h3 class="font-semibold text-sm mb-2"><%= _title %></h3><% } %>
+    <% if (!_items.length) { %>
+      <p class="text-sm text-base-content/60"><%= _emptyText %></p>
+    <% } else { %>
+      <ul class="space-y-2">
+        <% _items.forEach(function (it) { %>
+          <li class="flex items-start gap-2 text-sm">
+            <span class="badge badge-xs <%= it.tone || 'badge-ghost' %> mt-1"><%= it.emoji || '•' %></span>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span class="font-medium"><%= it.label %></span>
+                <% if (it.prevLabel) { %>
+                  <span class="text-xs text-base-content/50">από «<%= it.prevLabel %>»</span>
+                <% } %>
+                <span class="text-xs text-base-content/50"><%= _fmt(it.changedAt) %></span>
+                <% if (it.changedBy) { %><span class="text-xs text-base-content/40">· <%= it.changedBy %></span><% } %>
+              </div>
+              <% if (it.note) { %><div class="text-xs text-base-content/70 break-words"><%= it.note %></div><% } %>
+            </div>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </div>
+</div>

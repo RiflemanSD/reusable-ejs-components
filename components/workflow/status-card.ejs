@@ -1,0 +1,76 @@
+<%# components/workflow/status-card.ejs
+ *
+ * Κάρτα «Δικό μας status» για φόρμες εγγραφών (BACKLOG F-9): badge + select + ιστορικό.
+ * Ένα component για όλες τις οντότητες (orders, προτιμολόγια, παραγγελίες προμηθευτών).
+ *
+ * Παράμετροι:
+ *   ctx        (required) — από `workflowService.getFormContext(kind, id)`
+ *   entityId   (required) — το id της εγγραφής (για το POST)
+ *   title      (optional) — τίτλος (default: «Δικό μας status»)
+ *   basePath   (optional) — override του link «Όλα ανά κατάσταση» (default: ctx.pagePath)
+ *   showPageLink (optional) — default true
+ *   cardClass  (optional) — extra κλάσεις στο wrapper
+ *
+ * Χρήση: include('partials/components/workflow/status-card', { ctx: workflow, entityId: data.id })
+ %>
+<%
+  const _ctx      = typeof ctx !== 'undefined' && ctx ? ctx : null;
+  const _entityId = typeof entityId !== 'undefined' && entityId !== null ? String(entityId) : '';
+  const _title    = typeof title !== 'undefined' && title ? title : 'Δικό μας status';
+  const _basePath = typeof basePath !== 'undefined' && basePath ? basePath : (_ctx ? _ctx.pagePath : '');
+  const _showLink = typeof showPageLink !== 'undefined' ? !!showPageLink : true;
+  const _cardClass = typeof cardClass !== 'undefined' && cardClass ? cardClass : 'mb-4';
+  const _history  = _ctx && Array.isArray(_ctx.history) ? _ctx.history : [];
+  const _statuses = _ctx && Array.isArray(_ctx.statuses) ? _ctx.statuses : [];
+  const _fmtWhen = function (d) {
+    if (!d) return '';
+    try {
+      return new Date(d).toLocaleString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return String(d); }
+  };
+%>
+<% if (_ctx && _entityId && _statuses.length) { %>
+<div class="card bg-base-100 shadow <%= _cardClass %>" data-wf-row>
+  <div class="card-body p-3 gap-2">
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-sm font-bold"><%= _ctx.icon || '🗂️' %> <%= _title %></span>
+        <%- include('./status-badge', { status: _ctx.status, size: 'sm', fallback: 'Χωρίς κατάσταση', attrs: 'data-wf-badge' }) %>
+        <% if (_showLink && _basePath) { %>
+          <a href="<%= _basePath %>" class="link link-hover text-xs text-base-content/60" title="Όλες οι εγγραφές ομαδοποιημένες ανά κατάσταση">Όλα ανά κατάσταση →</a>
+        <% } %>
+      </div>
+      <div class="text-xs text-base-content/50" data-wf-updated>
+        <% if (_ctx.updatedAt) { %>
+          Τελευταία αλλαγή: <%= _fmtWhen(_ctx.updatedAt) %><% if (_ctx.updatedBy) { %> · <%= _ctx.updatedBy %><% } %>
+        <% } else { %>
+          Δεν έχει οριστεί κατάσταση ακόμη
+        <% } %>
+      </div>
+    </div>
+
+    <%- include('./status-select', {
+          kind: _ctx.kind,
+          entityId: _entityId,
+          current: _ctx.code,
+          statuses: _statuses,
+          withNote: true,
+          reload: false,
+          historyBtn: false
+    }) %>
+
+    <% if (_ctx.note) { %>
+      <p class="text-xs text-base-content/70"><span class="font-semibold">Σημείωση:</span> <%= _ctx.note %></p>
+    <% } %>
+
+    <% if (_history.length) { %>
+      <details class="collapse collapse-arrow bg-base-200/60 rounded-box">
+        <summary class="collapse-title text-xs font-medium py-1.5 min-h-0">Ιστορικό αλλαγών (<%= _history.length %>)</summary>
+        <div class="collapse-content px-2 pb-2">
+          <%- include('./status-timeline', { items: _history, compact: true }) %>
+        </div>
+      </details>
+    <% } %>
+  </div>
+</div>
+<% } %>

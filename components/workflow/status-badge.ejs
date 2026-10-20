@@ -1,0 +1,33 @@
+<%# components/workflow/status-badge.ejs
+ *
+ * Badge κατάστασης workflow (BACKLOG F-9). Ασφαλές με κενό/άγνωστο status.
+ *
+ * Παράμετροι:
+ *   status   (object|null) — status object από `resolveStatus()`: { code, label, emoji, tone }
+ *   fallback (optional)    — κείμενο όταν δεν υπάρχει status (default: 'Χωρίς κατάσταση')
+ *   size     (optional)    — 'xs' (default) | 'sm' | 'md'
+ *   showEmoji(optional)    — default true
+ *   href     (optional)    — αν δοθεί, το badge γίνεται σύνδεσμος
+ *   title    (optional)    — tooltip
+ *   attrs    (optional)    — επιπλέον attributes (raw), π.χ. 'data-wf-badge'
+ *
+ * Χρήση: include('partials/components/workflow/status-badge', { status: resolveStatus('order', code) })
+ %>
+<%
+  const _st        = typeof status !== 'undefined' ? status : null;
+  const _fallback  = typeof fallback !== 'undefined' && fallback !== null ? fallback : 'Χωρίς κατάσταση';
+  const _size      = typeof size !== 'undefined' && size ? size : 'xs';
+  const _showEmoji = typeof showEmoji !== 'undefined' ? !!showEmoji : true;
+  const _href      = typeof href !== 'undefined' && href ? href : '';
+  const _title     = typeof title !== 'undefined' && title ? title : '';
+  const _attrs     = typeof attrs !== 'undefined' && attrs ? ' ' + String(attrs) : '';
+  const _sizeClass = _size === 'md' ? 'badge-md' : (_size === 'sm' ? 'badge-sm' : 'badge-xs');
+  const _tone      = _st && _st.tone ? _st.tone : 'badge-ghost';
+  const _label     = _st ? _st.label : _fallback;
+  const _emoji     = _st && _st.emoji ? _st.emoji : '•';
+%>
+<% if (_href) { %>
+<a href="<%= _href %>" class="badge <%= _sizeClass %> <%= _tone %> gap-1 whitespace-nowrap<%= _st ? '' : ' badge-outline' %>"<%- _attrs %> title="<%= _title %>"><%= _showEmoji ? _emoji + ' ' : '' %><%= _label %></a>
+<% } else { %>
+<span class="badge <%= _sizeClass %> <%= _tone %> gap-1 whitespace-nowrap<%= _st ? '' : ' badge-outline' %>"<%- _attrs %> title="<%= _title %>"><%= _showEmoji ? _emoji + ' ' : '' %><%= _label %></span>
+<% } %>
