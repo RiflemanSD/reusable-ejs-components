@@ -1,42 +1,150 @@
 <%#
-  Μία γραμμή με δύο κάρτες δίπλα-δίπλα (BACKLOG F-9):
-    αριστερά  «🧾 Παραστατικά Soft1»  (partials/orders/soft1-docs-card.ejs)
-    δεξιά     «Δικό μας status»        (partials/components/workflow/status-card.ejs)
+  Δύο συμπαγή κελιά για το grid των πεδίων μιας φόρμας (BACKLOG F-9):
 
-  Πριν ήταν δύο στοιβαγμένες κάρτες (μία πάνω στην άλλη) στη φόρμα παραγγελίας και στη φόρμα
-  προτιμολογίου· τώρα μία γραμμή (σε στενή οθόνη πέφτουν η μία κάτω από την άλλη).
+    1) «🧾 Παραστατικά Soft1» — πλήθος + τελευταίο παραστατικό, κουμπί «Λεπτομέρειες»
+       → modal με τον πλήρη πίνακα (partial orders/soft1-docs-card: πίνακας + ζωντανός έλεγχος ΠΡΦ/ΠΑΛ)
+    2) «Δικό μας status» — badge τρέχουσας κατάστασης, κουμπί «Αλλαγή»
+       → modal με select κατάστασης / σημείωση / ιστορικό (status-select · status-timeline)
+
+  Το component ΔΕΝ φτιάχνει δικό του grid: τα κελιά μπαίνουν ως παιδιά στο grid των πεδίων,
+  π.χ. `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3"> … include … </div>`.
+  (Πριν ήταν δύο μεγάλες κάρτες σε δική τους γραμμή — καταλάμβαναν πολύ ύψος.)
 
   locals:
-    soft1Docs  (προαιρετικό) πίνακας παραστατικών — αν λείπει/null, η κάρτα δεν βγαίνει
+    soft1Docs  (προαιρετικό) πίνακας παραστατικών — αν λείπει/null, το κελί δεν βγαίνει
     workflow   (προαιρετικό) context κατάστασης (services/workflow/workflowService.js) — αν λείπει, δεν βγαίνει
     entityId   id της εγγραφής (για το POST κατάστασης)
     emptyText  (προαιρετικό) κείμενο «δεν βρέθηκε παραστατικό»
     sourcesUrl (προαιρετικό) endpoint ζωντανού ελέγχου ΠΡΦ/ΠΑΛ
+    cellClass  (προαιρετικό) επιπλέον κλάσεις στο κελί (π.χ. 'col-span-2')
+
+  Το JS της αλλαγής κατάστασης είναι το κοινό `public/js/utils/workflow-status.js`
+  (script tag στη φόρμα / στο layout) — εδώ μόνο το άνοιγμα-κλείσιμο των modal.
 -%>
 <%
   const _docs = (typeof soft1Docs !== 'undefined' && Array.isArray(soft1Docs)) ? soft1Docs : null;
   const _wf = (typeof workflow !== 'undefined' && workflow) ? workflow : null;
+  const _entityId = (typeof entityId !== 'undefined' && entityId !== null && entityId !== '') ? String(entityId) : '';
   const _emptyText = (typeof emptyText !== 'undefined') ? emptyText : '';
   const _sourcesUrl = (typeof sourcesUrl !== 'undefined') ? sourcesUrl : '';
-  const _count = (_docs ? 1 : 0) + (_wf ? 1 : 0);
-  const _grid = _count === 2 ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 items-stretch' : '';
+  const _cellClass = (typeof cellClass !== 'undefined' && cellClass) ? ' ' + cellClass : '';
+  const _statuses = _wf && Array.isArray(_wf.statuses) ? _wf.statuses : [];
+  const _history = _wf && Array.isArray(_wf.history) ? _wf.history : [];
+  const _showWf = !!(_wf && _entityId && _statuses.length);
+
+  const _date = (v) => {
+    if (!v) return '';
+    try { return new Date(v).toLocaleDateString('el-GR'); } catch (e) { return String(v); }
+  };
+  const _when = (d) => {
+    if (!d) return '';
+    try {
+      return new Date(d).toLocaleString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return String(d); }
+  };
+
+  // «Τελευταίο» παραστατικό: κατά προτίμηση ενεργό (όχι ακυρωμένο / σβησμένο στο Soft1)
+  const _activeDocs = (_docs || []).filter((d) => !d.is_cancelled && !d.deleted_in_soft1);
+  const _lastDoc = _activeDocs.length ? _activeDocs[0] : ((_docs && _docs.length) ? _docs[0] : null);
+
+  const _dlgDocs = 'soft1DocsDialog';
+  const _dlgWf = 'wfStatusDialog';
 %>
-<% if (_count > 0) { %>
-<div class="<%= _grid %> mb-4">
-  <% if (_docs) { %>
-    <%- include('../../orders/soft1-docs-card', {
-      soft1Docs: _docs,
-      emptyText: _emptyText,
-      sourcesUrl: _sourcesUrl,
-      cardClass: _count === 2 ? 'h-full mb-0' : 'mb-4'
-    }) %>
-  <% } %>
-  <% if (_wf) { %>
-    <%- include('./status-card', {
-      ctx: _wf,
-      entityId: (typeof entityId !== 'undefined') ? entityId : '',
-      cardClass: _count === 2 ? 'h-full mb-0' : 'mb-4'
-    }) %>
-  <% } %>
+<% if (_docs) { %>
+<div class="form-control<%= _cellClass %>">
+  <label class="label py-1">
+    <span class="label-text text-xs font-semibold">Παραστατικά Soft1</span>
+    <% if (_docs.length) { %>
+      <span class="label-text-alt text-xs"><span class="badge badge-ghost badge-xs"><%= _docs.length %></span></span>
+    <% } %>
+  </label>
+  <button type="button" class="btn btn-outline btn-sm w-full justify-start gap-1 normal-case font-normal overflow-hidden"
+          data-open-dialog="<%= _dlgDocs %>" title="Λεπτομέρειες παραστατικών Soft1 (τοπικό αντίγραφο + ζωντανός έλεγχος ΠΡΦ/ΠΑΛ)">
+    <span class="shrink-0">🧾</span>
+    <span class="truncate text-left"><% if (_lastDoc) { %><%= _lastDoc.fincode || _lastDoc.findoc %> · <%= _date(_lastDoc.trndate) %><% } else { %>Κανένα παραστατικό<% } %></span>
+    <span class="ml-auto shrink-0 text-[10px] text-base-content/50">Λεπτομέρειες</span>
+  </button>
+
+  <dialog id="<%= _dlgDocs %>" class="modal">
+    <div class="modal-box max-w-5xl p-3">
+      <%- include('../../orders/soft1-docs-card', {
+        soft1Docs: _docs,
+        emptyText: _emptyText,
+        sourcesUrl: _sourcesUrl,
+        cardClass: 'mb-0'
+      }) %>
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-sm" data-close-dialog>Κλείσιμο</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
 </div>
+<% } %>
+<% if (_showWf) { %>
+<div class="form-control<%= _cellClass %>" data-wf-row>
+  <label class="label py-1">
+    <span class="label-text text-xs font-semibold">Δικό μας status</span>
+    <% if (_wf.pagePath) { %>
+      <a href="<%= _wf.pagePath %>" class="label-text-alt text-xs link link-hover" title="Όλες οι εγγραφές ομαδοποιημένες ανά κατάσταση">Όλα →</a>
+    <% } %>
+  </label>
+  <button type="button" class="btn btn-outline btn-sm w-full justify-start gap-1 normal-case font-normal overflow-hidden"
+          data-open-dialog="<%= _dlgWf %>" title="Αλλαγή κατάστασης / ιστορικό αλλαγών">
+    <%- include('./status-badge', { status: _wf.status, size: 'sm', fallback: 'Χωρίς κατάσταση', attrs: 'data-wf-badge' }) %>
+    <span class="ml-auto shrink-0 text-[10px] text-base-content/50">Αλλαγή</span>
+  </button>
+  <span class="text-[10px] leading-tight text-base-content/50 mt-1 truncate" data-wf-updated>
+    <% if (_wf.updatedAt) { %><%= _when(_wf.updatedAt) %><% if (_wf.updatedBy) { %> · <%= _wf.updatedBy %><% } %><% } else { %>Χωρίς αλλαγή ακόμη<% } %>
+  </span>
+
+  <dialog id="<%= _dlgWf %>" class="modal">
+    <div class="modal-box max-w-lg">
+      <h3 class="font-bold text-base flex items-center gap-2"><%= _wf.icon || '🗂️' %> Δικό μας status</h3>
+      <div class="mt-3 space-y-2">
+        <%- include('./status-select', {
+          kind: _wf.kind,
+          entityId: _entityId,
+          current: _wf.code,
+          statuses: _statuses,
+          label: 'Νέα κατάσταση',
+          reload: false,
+          withNote: true,
+          historyBtn: false
+        }) %>
+        <% if (_wf.note) { %>
+          <p class="text-xs text-base-content/70"><span class="font-semibold">Σημείωση:</span> <%= _wf.note %></p>
+        <% } %>
+        <div id="wfStatusError" class="text-xs text-error hidden"></div>
+        <div class="pt-1 max-h-64 overflow-y-auto">
+          <%- include('./status-timeline', { items: _history, compact: true }) %>
+        </div>
+      </div>
+      <div class="modal-action">
+        <button type="button" class="btn btn-sm" data-close-dialog>Κλείσιμο</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+</div>
+<% } %>
+<% if (_docs || _showWf) { %>
+<script>
+  (() => {
+    document.addEventListener('click', (event) => {
+      if (!event.target || !event.target.closest) return;
+      const opener = event.target.closest('[data-open-dialog]');
+      if (opener) {
+        const dialog = document.getElementById(opener.getAttribute('data-open-dialog'));
+        if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+        return;
+      }
+      const closer = event.target.closest('[data-close-dialog]');
+      if (closer) {
+        const dialog = closer.closest('dialog');
+        if (dialog) dialog.close();
+      }
+    });
+  })();
+</script>
 <% } %>
