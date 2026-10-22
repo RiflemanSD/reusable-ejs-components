@@ -1,0 +1,122 @@
+<%#
+  next-move.ejs — «📌 Επόμενη κίνηση» (κοινό: παραγγελίες · προτιμολόγια · υποθέσεις)
+  Σχέδιο: docs/user_files/NEXT_MOVE_KOINO_2026-10.md · skill `workflow` §Επόμενη κίνηση.
+
+  Τι δείχνει: τι πρέπει να γίνει + πότε (badge 🔴/🟠/🟡/🟢) και κουμπιά «▶ μετάβαση».
+  Το «▶» ανοίγει dialog με σημείωση, «✉ Email» (αν η μετάβαση έχει πρότυπο) και «✓ Έγινε»
+  → POST /workflow/<kind>/<id>/transition: αλλάζει κατάσταση ΚΑΙ ξαναϋπολογίζει την κίνηση.
+  Το «✏️» αλλάζει χειροκίνητα κείμενο/ημερομηνία (POST …/next-move).
+
+  Όλο το περιεχόμενο το ζωγραφίζει το `public/js/utils/next-move.js` από το `ctx` (JSON),
+  ώστε server-render και ενημέρωση μετά από AJAX να είναι το ίδιο markup.
+
+  locals:
+    ctx        context από `nextMoveService.getContext` (στις φόρμες: `workflow.nextMove`)·
+               αν λείπει, το JS το φορτώνει (GET …/next-move)
+    kind       'order' | 'protimologia' | 'case'
+    entityId   id εγγραφής
+    variant    'cell' (default: κελί του grid πεδίων, όπως το status-docs-row) | 'inline'
+               (μέσα σε υπάρχον πλαίσιο — π.χ. «Επόμενη Κίνηση» της φόρμας υπόθεσης)
+    allowEdit  (default true) κουμπί ✏️ χειροκίνητης αλλαγής (στην υπόθεση το κάνουν τα πεδία της φόρμας)
+    withEmail  (default true) modal email (prefix 'nextmove')· η σελίδα δίνει μεταβλητές/παραλήπτη
+               με `window.nextMoveEmail = { getVars, getTo, getCc, beforeOpen }`
+    cellClass  επιπλέον κλάσεις στο κελί
+
+  Ενημερώνει in-place: `[data-wf-row] [data-wf-badge]` (status-docs-row) και εκπέμπει
+  `document` event `nextmove:change` ({ detail: { ctx, transition } }) για τη φόρμα.
+-%>
+<%
+  const _kind = typeof kind !== 'undefined' && kind ? String(kind) : '';
+  const _id = typeof entityId !== 'undefined' && entityId !== null && entityId !== '' ? String(entityId) : '';
+  const _ctx = typeof ctx !== 'undefined' && ctx ? ctx : null;
+  const _variant = typeof variant !== 'undefined' && variant === 'inline' ? 'inline' : 'cell';
+  const _allowEdit = typeof allowEdit === 'undefined' ? true : !!allowEdit;
+  const _withEmail = typeof withEmail === 'undefined' ? true : !!withEmail;
+  const _cellClass = typeof cellClass !== 'undefined' && cellClass ? ' ' + cellClass : '';
+  const _base = _kind && _id ? '/workflow/' + encodeURIComponent(_kind) + '/' + encodeURIComponent(_id) : '';
+  const _json = JSON.stringify(_ctx || null).replace(/</g, '\\u003c');
+%>
+<% if (_base) { %>
+<div class="<%= _variant === 'cell' ? 'form-control min-w-0' : 'mt-2' %><%= _cellClass %>"
+     data-next-move
+     data-nm-base="<%= _base %>"
+     data-nm-kind="<%= _kind %>"
+     data-nm-id="<%= _id %>"
+     data-nm-variant="<%= _variant %>"
+     data-nm-edit="<%= _allowEdit ? '1' : '0' %>"
+     data-nm-email="<%= _withEmail ? '1' : '0' %>">
+  <script type="application/json" data-nm-ctx><%- _json %></script>
+  <% if (_variant === 'cell') { %>
+    <label class="label py-1">
+      <span class="label-text text-xs font-semibold">📌 Επόμενη κίνηση</span>
+      <a href="/workflow/next-moves" class="label-text-alt text-xs link link-hover" title="Όλες οι επόμενες κινήσεις">Όλες →</a>
+    </label>
+  <% } %>
+  <div data-nm-summary class="text-xs text-base-content/50">Φόρτωση…</div>
+  <%# Τα dialogs είναι σε <template>: το component μπαίνει συχνά ΜΕΣΑ στην <form> της σελίδας, όπου
+      ένα εσωτερικό <form method="dialog"> θα χανόταν από τον parser (και το backdrop θα έκανε submit).
+      Το JS τα μεταφέρει στο <body>. %>
+  <template data-nm-dialogs>
+  <div data-nm-portal>
+  <dialog class="modal" data-nm-dialog>
+    <div class="modal-box max-w-lg">
+      <h3 class="font-bold text-base" data-nm-dialog-title>▶ Κίνηση</h3>
+      <p class="text-xs text-base-content/60 mt-1" data-nm-dialog-hint></p>
+      <div class="form-control mt-3">
+        <label class="label py-0.5"><span class="label-text text-xs">Σημείωση (προαιρετική — μπαίνει στο ιστορικό)</span></label>
+        <textarea class="textarea textarea-bordered textarea-sm w-full" rows="2" maxlength="1500" data-nm-note></textarea>
+      </div>
+      <div class="text-xs text-error mt-2 hidden" data-nm-error></div>
+      <div class="modal-action flex-wrap gap-2">
+        <button type="button" class="btn btn-sm btn-outline hidden" data-nm-email-btn>✉ Email</button>
+        <button type="button" class="btn btn-sm" data-nm-cancel>Άκυρο</button>
+        <button type="button" class="btn btn-sm btn-primary" data-nm-done>✓ Έγινε</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <% if (_allowEdit) { %>
+  <dialog class="modal" data-nm-edit-dialog>
+    <div class="modal-box max-w-md">
+      <h3 class="font-bold text-base">✏️ Επόμενη κίνηση</h3>
+      <div class="form-control mt-3">
+        <label class="label py-0.5"><span class="label-text text-xs">Τι πρέπει να γίνει</span></label>
+        <input type="text" class="input input-bordered input-sm w-full" maxlength="500" data-nm-text />
+      </div>
+      <div class="form-control mt-2">
+        <label class="label py-0.5"><span class="label-text text-xs">Πότε</span></label>
+        <div class="flex gap-1">
+          <input type="date" class="input input-bordered input-sm flex-1" data-nm-date />
+          <input type="time" class="input input-bordered input-sm w-28" data-nm-time />
+        </div>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="0">Σήμερα</button>
+          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="1b">+1 εργάσιμη</button>
+          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="3b">+3 εργάσιμες</button>
+          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="7">+1 εβδομάδα</button>
+          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="clear">Χωρίς ημ/νία</button>
+        </div>
+      </div>
+      <div class="text-xs text-error mt-2 hidden" data-nm-edit-error></div>
+      <div class="modal-action">
+        <button type="button" class="btn btn-sm" data-nm-edit-cancel>Άκυρο</button>
+        <button type="button" class="btn btn-sm btn-primary" data-nm-edit-save>Αποθήκευση</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+  <% } %>
+<% if (_withEmail) { %>
+  <%- include('../../email/email-compose-modal', {
+    prefix: 'nextmove',
+    title: '✉️ Email κίνησης',
+    intro: 'Το πρότυπο διαλέγεται από την κίνηση· μπορείς να το αλλάξεις. Μετά την αποστολή πάτα «✓ Έγινε».',
+    showClose: true
+  }) %>
+<% } %>
+  </div>
+  </template>
+</div>
+<script type="module" src="/js/utils/next-move.js"></script>
+<% } %>

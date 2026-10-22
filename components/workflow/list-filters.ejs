@@ -4,6 +4,8 @@
   Props (όλα προαιρετικά):
     wfStatuses  (array)  καταστάσεις του είδους, π.χ. getStatuses('protimologia'). Αν λείπει/άδειο → δεν βγαίνει το select.
     wstatus     (string) τρέχουσα τιμή: '' | 'none' | 'active' | κωδικός
+    nmove       (string) φίλτρο «📌 επόμενη κίνηση»: '' | due | overdue | today | week | later.
+                         Αν δεν δοθεί (undefined) → δεν βγαίνει το select.
     datePreset  (string) '' | today | week | month | year
     dateFrom    (string) YYYY-MM-DD
     dateTo      (string) YYYY-MM-DD
@@ -23,6 +25,8 @@
   const _lfApply = (typeof applyFn !== 'undefined' && applyFn) ? applyFn : 'applyFilters';
   const _lfStatuses = Array.isArray(wfStatuses) ? wfStatuses : [];
   const _lfWstatus = typeof wstatus !== 'undefined' ? (wstatus || '') : '';
+  const _lfShowNmove = typeof nmove !== 'undefined' && nmove !== null;
+  const _lfNmove = _lfShowNmove ? String(nmove || '') : '';
   const _lfPreset = (typeof datePreset !== 'undefined' && datePreset) ? datePreset : '';
   const _lfFrom = typeof dateFrom !== 'undefined' ? (dateFrom || '') : '';
   const _lfTo = typeof dateTo !== 'undefined' ? (dateTo || '') : '';
@@ -44,6 +48,14 @@
     <option value="none"   <%- _lfWstatus === 'none'   ? 'selected' : '' %>>⚪ Χωρίς κατάσταση</option>
     <% _lfStatuses.forEach((st) => { %>
     <option value="<%= st.code %>" <%- _lfWstatus === st.code ? 'selected' : '' %>><%= st.emoji %> <%= st.label %></option>
+    <% }) %>
+  </select>
+  <% } %>
+
+  <% if (_lfShowNmove) { %>
+  <select id="nmoveSel" class="select select-bordered select-xs max-w-48" onchange="<%= _lfApply %>()" title="Φίλτρο με την επόμενη κίνηση">
+    <% [['', '📌 Όλες οι κινήσεις'], ['due', '⏰ Για σήμερα (+ καθυστέρηση)'], ['overdue', '🔴 Ληξιπρόθεσμες'], ['today', '🟠 Σήμερα'], ['week', '🟡 Αυτή την εβδομάδα'], ['later', '🟢 Αργότερα']].forEach(([v, l]) => { %>
+    <option value="<%= v %>" <%- _lfNmove === v ? 'selected' : '' %>><%= l %></option>
     <% }) %>
   </select>
   <% } %>
