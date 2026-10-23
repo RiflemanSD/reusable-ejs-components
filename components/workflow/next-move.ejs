@@ -5,7 +5,8 @@
   Τι δείχνει: τι πρέπει να γίνει + πότε (badge 🔴/🟠/🟡/🟢) και κουμπιά «▶ μετάβαση».
   Το «▶» ανοίγει dialog με σημείωση, «✉ Email» (αν η μετάβαση έχει πρότυπο) και «✓ Έγινε»
   → POST /workflow/<kind>/<id>/transition: αλλάζει κατάσταση ΚΑΙ ξαναϋπολογίζει την κίνηση.
-  Το «✏️» αλλάζει χειροκίνητα κείμενο/ημερομηνία (POST …/next-move).
+  Με `allowEdit` το κείμενο, η ημερομηνία και η ώρα είναι πεδία στη γραμμή (χωρίς ✏️/dialog):
+  αποθηκεύονται μόλις αλλάξουν (blur / Enter / ⏱ γρήγορη ημερομηνία) → POST …/next-move.
 
   Όλο το περιεχόμενο το ζωγραφίζει το `public/js/utils/next-move.js` από το `ctx` (JSON),
   ώστε server-render και ενημέρωση μετά από AJAX να είναι το ίδιο markup.
@@ -17,11 +18,11 @@
     entityId   id εγγραφής
     variant    'cell' (default: κελί του grid πεδίων, όπως το status-docs-row) | 'inline'
                (μέσα σε υπάρχον πλαίσιο — π.χ. «Επόμενη Κίνηση» της φόρμας υπόθεσης)
-    allowEdit  (default true) κουμπί ✏️ χειροκίνητης αλλαγής (στην υπόθεση το κάνουν τα πεδία της φόρμας)
+    allowEdit  (default true) πεδία κειμένου/ημερομηνίας/ώρας επί τόπου (στην υπόθεση το κάνουν τα πεδία της φόρμας)
     withEmail  (default true) modal email (prefix 'nextmove')· η σελίδα δίνει μεταβλητές/παραλήπτη
                με `window.nextMoveEmail = { getVars, getTo, getCc, beforeOpen }`
     cellClass  επιπλέον κλάσεις στο κελί
-    showSummary (default true) γραμμή «badge + κείμενο + ✏️»· false όταν η σελίδα έχει ήδη τα πεδία
+    showSummary (default true) γραμμή «badge + κείμενο» (ή τα πεδία του allowEdit)· false όταν η σελίδα έχει ήδη τα πεδία
                (υπόθεση) — μένουν μόνο τα κουμπιά ▶ και οι εναλλακτικές
     plain       (default false) χωρίς χρώματα: badge ημερομηνίας/κατάστασης με περίγραμμα και 📅 αντί για 🔴/🟠/🟡/🟢
                 (φόρμες προτιμολογίου/παραγγελίας)
@@ -104,37 +105,6 @@
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
-  <% if (_allowEdit) { %>
-  <dialog class="modal" data-nm-edit-dialog>
-    <div class="modal-box max-w-md">
-      <h3 class="font-bold text-base">✏️ Επόμενη κίνηση</h3>
-      <div class="form-control mt-3">
-        <label class="label py-0.5"><span class="label-text text-xs">Τι πρέπει να γίνει</span></label>
-        <input type="text" class="input input-bordered input-sm w-full" maxlength="500" data-nm-text />
-      </div>
-      <div class="form-control mt-2">
-        <label class="label py-0.5"><span class="label-text text-xs">Πότε</span></label>
-        <div class="flex gap-1">
-          <input type="date" class="input input-bordered input-sm flex-1" data-nm-date />
-          <input type="time" class="input input-bordered input-sm w-28" data-nm-time />
-        </div>
-        <div class="flex flex-wrap gap-1 mt-1">
-          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="0">Σήμερα</button>
-          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="1b">+1 εργάσιμη</button>
-          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="3b">+3 εργάσιμες</button>
-          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="7">+1 εβδομάδα</button>
-          <button type="button" class="btn btn-xs btn-ghost" data-nm-quick="clear">Χωρίς ημ/νία</button>
-        </div>
-      </div>
-      <div class="text-xs text-error mt-2 hidden" data-nm-edit-error></div>
-      <div class="modal-action">
-        <button type="button" class="btn btn-sm" data-nm-edit-cancel>Άκυρο</button>
-        <button type="button" class="btn btn-sm btn-primary" data-nm-edit-save>Αποθήκευση</button>
-      </div>
-    </div>
-    <form method="dialog" class="modal-backdrop"><button>close</button></form>
-  </dialog>
-  <% } %>
 <% if (_withEmail) { %>
   <%- include('../../email/email-compose-modal', {
     prefix: 'nextmove',
