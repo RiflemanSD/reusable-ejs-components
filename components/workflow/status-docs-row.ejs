@@ -17,6 +17,9 @@
     emptyText  (προαιρετικό) κείμενο «δεν βρέθηκε παραστατικό»
     sourcesUrl (προαιρετικό) endpoint ζωντανού ελέγχου ΠΡΦ/ΠΑΛ
     cellClass  (προαιρετικό) επιπλέον κλάσεις στο κελί (π.χ. 'col-span-2')
+    statusEmail (προαιρετικό) κουμπί ✉ δίπλα στην κατάσταση όταν αυτή έχει πρότυπο email
+               (`workflow.statusEmails`) + event `workflow:status-email` — η σελίδα πρέπει να το ακούει
+               (σήμερα: protimologia-csv-form.ejs)
 
   Το JS της αλλαγής κατάστασης είναι το κοινό `public/js/utils/workflow-status.js`
   (script tag στη φόρμα / στο layout) — εδώ μόνο το άνοιγμα-κλείσιμο των modal.
@@ -28,6 +31,7 @@
   const _emptyText = (typeof emptyText !== 'undefined') ? emptyText : '';
   const _sourcesUrl = (typeof sourcesUrl !== 'undefined') ? sourcesUrl : '';
   const _cellClass = (typeof cellClass !== 'undefined' && cellClass) ? ' ' + cellClass : '';
+  const _statusEmail = typeof statusEmail !== 'undefined' && !!statusEmail;
   const _statuses = _wf && Array.isArray(_wf.statuses) ? _wf.statuses : [];
   const _history = _wf && Array.isArray(_wf.history) ? _wf.history : [];
   const _showWf = !!(_wf && _entityId && _statuses.length);
@@ -89,11 +93,23 @@
       <a href="<%= _wf.pagePath %>" target="_blank" rel="noopener" class="label-text-alt text-xs link link-hover" title="Όλες οι εγγραφές ομαδοποιημένες ανά κατάσταση">Όλα →</a>
     <% } %>
   </label>
-  <button type="button" class="btn btn-outline btn-sm w-full justify-start gap-1 normal-case font-normal overflow-hidden"
-          data-open-dialog="<%= _dlgWf %>" title="Αλλαγή κατάστασης / ιστορικό αλλαγών">
-    <%- include('./status-badge', { status: _wf.status, size: 'sm', fallback: 'Χωρίς κατάσταση', attrs: 'data-wf-badge' }) %>
-    <span class="ml-auto shrink-0 text-[10px] text-base-content/50">Αλλαγή</span>
-  </button>
+  <div class="flex gap-1 min-w-0">
+    <button type="button" class="btn btn-outline btn-sm flex-1 min-w-0 justify-start gap-1 normal-case font-normal overflow-hidden"
+            data-open-dialog="<%= _dlgWf %>" title="Αλλαγή κατάστασης / ιστορικό αλλαγών">
+      <%- include('./status-badge', { status: _wf.status, size: 'sm', fallback: 'Χωρίς κατάσταση', attrs: 'data-wf-badge' }) %>
+      <span class="ml-auto shrink-0 text-[10px] text-base-content/50">Αλλαγή</span>
+    </button>
+    <%# ✉ = το πρότυπο email της κατάστασης (μεταβάσεις στο /workflow/statuses) → event `workflow:status-email` %>
+    <% if (_statusEmail) { %>
+    <button type="button" class="btn btn-outline btn-sm btn-square shrink-0<%= _wf.statusEmails && _wf.statusEmails[_wf.code] ? '' : ' hidden' %>"
+            data-wf-email-btn data-wf-kind="<%= _wf.kind %>" data-wf-id="<%= _entityId %>"
+            data-wf-code="<%= _wf.code || '' %>" data-wf-prev-code="<%= _wf.prevCode || '' %>"
+            title="Email της κατάστασης (με το πρότυπο που έχει ρυθμιστεί)">✉</button>
+    <% } %>
+  </div>
+  <% if (_statusEmail) { %>
+  <script type="application/json" data-wf-status-emails><%- JSON.stringify(_wf.statusEmails || {}).replace(/</g, '\\u003c') %></script>
+  <% } %>
   <span class="text-[10px] leading-tight text-base-content/50 mt-1 truncate" data-wf-updated>
     <% if (_wf.updatedAt) { %><%= _when(_wf.updatedAt) %><% if (_wf.updatedBy) { %> · <%= _wf.updatedBy %><% } %><% } else { %>Χωρίς αλλαγή ακόμη<% } %>
   </span>
@@ -143,7 +159,41 @@
       if (closer) {
         const dialog = closer.closest('dialog');
         if (dialog) dialog.close();
+        return;
       }
+      const emailBtn = event.target.closest('[data-wf-email-btn]');
+      if (emailBtn) emitStatusEmail(emailBtn, false);
+    });
+
+    /*
+     * ✉ πρότυπο email της κατάστασης. Ο καταναλωτής (η φόρμα) ακούει το
+     * `workflow:status-email` { kind, id, code, prev, emails, auto } και διαλέγει με
+     * `pickStatusEmailRef(emails, code, prev)` (public/js/utils/email-compose-modal.js).
+     * `auto: true` = μόλις άλλαξε η κατάσταση (για άνοιγμα χωρίς κλικ).
+     */
+    function statusEmails(btn) {
+      const json = btn.closest('[data-wf-row]')?.querySelector('[data-wf-status-emails]');
+      try { return JSON.parse(json ? json.textContent : '{}') || {}; } catch (e) { return {}; }
+    }
+    function emitStatusEmail(btn, auto) {
+      document.dispatchEvent(new CustomEvent('workflow:status-email', { detail: {
+        kind: btn.getAttribute('data-wf-kind'),
+        id: btn.getAttribute('data-wf-id'),
+        code: btn.getAttribute('data-wf-code') || '',
+        prev: btn.getAttribute('data-wf-prev-code') || '',
+        emails: statusEmails(btn),
+        auto,
+      } }));
+    }
+    document.addEventListener('workflow:status-changed', (event) => {
+      const d = event.detail || {};
+      document.querySelectorAll('[data-wf-email-btn]').forEach((btn) => {
+        if (btn.getAttribute('data-wf-kind') !== d.kind || btn.getAttribute('data-wf-id') !== String(d.id)) return;
+        btn.setAttribute('data-wf-code', d.code || '');
+        btn.setAttribute('data-wf-prev-code', d.prev || '');
+        btn.classList.toggle('hidden', !statusEmails(btn)[d.code]);
+        emitStatusEmail(btn, true);
+      });
     });
   })();
 </script>
