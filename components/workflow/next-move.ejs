@@ -21,9 +21,18 @@
     withEmail  (default true) modal email (prefix 'nextmove')· η σελίδα δίνει μεταβλητές/παραλήπτη
                με `window.nextMoveEmail = { getVars, getTo, getCc, beforeOpen }`
     cellClass  επιπλέον κλάσεις στο κελί
+    showSummary (default true) γραμμή «badge + κείμενο + ✏️»· false όταν η σελίδα έχει ήδη τα πεδία
+               (υπόθεση) — μένουν μόνο τα κουμπιά ▶ και οι εναλλακτικές
+    bucketSlot  CSS selector στοιχείου της σελίδας όπου μπαίνει μόνο το emoji του κουβά (🔴/🟠/🟡/🟢)
+               με tooltip την ημερομηνία — π.χ. δίπλα στον τίτλο «Επόμενη Κίνηση»
 
   Ενημερώνει in-place: `[data-wf-row] [data-wf-badge]` (status-docs-row) και εκπέμπει
   `document` event `nextmove:change` ({ detail: { ctx, transition } }) για τη φόρμα.
+
+  Ερωτήσεις (dialog `[data-nm-ask-dialog]`):
+    · αλλαγή status από το select (`workflow-status.js` → `window.workflowStatusBeforeChange`):
+      «να αλλάξει και η επόμενη κίνηση;»· στην υπόθεση η φόρμα καλεί `root.nextMove.askStatusChange(status)`
+    · παραγγελία/προτιμολόγιο σε «ολοκληρωμένη» κατάσταση → «να ολοκληρωθεί και η υπόθεση;»
 -%>
 <%
   const _kind = typeof kind !== 'undefined' && kind ? String(kind) : '';
@@ -33,6 +42,8 @@
   const _allowEdit = typeof allowEdit === 'undefined' ? true : !!allowEdit;
   const _withEmail = typeof withEmail === 'undefined' ? true : !!withEmail;
   const _cellClass = typeof cellClass !== 'undefined' && cellClass ? ' ' + cellClass : '';
+  const _showSummary = typeof showSummary === 'undefined' ? true : !!showSummary;
+  const _bucketSlot = typeof bucketSlot !== 'undefined' && bucketSlot ? String(bucketSlot) : '';
   const _base = _kind && _id ? '/workflow/' + encodeURIComponent(_kind) + '/' + encodeURIComponent(_id) : '';
   const _json = JSON.stringify(_ctx || null).replace(/</g, '\\u003c');
 %>
@@ -44,12 +55,14 @@
      data-nm-id="<%= _id %>"
      data-nm-variant="<%= _variant %>"
      data-nm-edit="<%= _allowEdit ? '1' : '0' %>"
-     data-nm-email="<%= _withEmail ? '1' : '0' %>">
+     data-nm-email="<%= _withEmail ? '1' : '0' %>"
+     data-nm-summary-row="<%= _showSummary ? '1' : '0' %>"
+     data-nm-bucket-slot="<%= _bucketSlot %>">
   <script type="application/json" data-nm-ctx><%- _json %></script>
   <% if (_variant === 'cell') { %>
     <label class="label py-1">
       <span class="label-text text-xs font-semibold">📌 Επόμενη κίνηση</span>
-      <a href="/workflow/next-moves" class="label-text-alt text-xs link link-hover" title="Όλες οι επόμενες κινήσεις">Όλες →</a>
+      <a href="/workflow/next-moves" target="_blank" rel="noopener" class="label-text-alt text-xs link link-hover" title="Όλες οι επόμενες κινήσεις">Όλες →</a>
     </label>
   <% } %>
   <div data-nm-summary class="text-xs text-base-content/50">Φόρτωση…</div>
@@ -72,6 +85,17 @@
         <button type="button" class="btn btn-sm" data-nm-cancel>Άκυρο</button>
         <button type="button" class="btn btn-sm btn-primary" data-nm-done>✓ Έγινε</button>
       </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <%# Ερωτήσεις (αλλαγή status → «και η κίνηση;» · ολοκλήρωση → «και η υπόθεση;»): κείμενο/κουμπιά από το JS %>
+  <dialog class="modal" data-nm-ask-dialog>
+    <div class="modal-box max-w-lg">
+      <h3 class="font-bold text-base" data-nm-ask-title></h3>
+      <div class="text-sm mt-2 space-y-2" data-nm-ask-body></div>
+      <div class="text-xs text-error mt-2 hidden" data-nm-ask-error></div>
+      <div class="modal-action flex-wrap gap-2" data-nm-ask-actions></div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
