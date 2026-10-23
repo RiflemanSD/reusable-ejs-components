@@ -10,6 +10,9 @@
  *   href     (optional)    — αν δοθεί, το badge γίνεται σύνδεσμος
  *   title    (optional)    — tooltip
  *   attrs    (optional)    — επιπλέον attributes (raw), π.χ. 'data-wf-badge'
+ *   plain    (optional)    — true = χωρίς χρώμα (badge-outline αντί για το tone της κατάστασης) + `data-wf-plain`
+ *                            (το κρατούν και τα scripts που ξαναγράφουν το badge)
+ *   wrap     (optional)    — true = αναδίπλωση σε στενά κελιά/κάρτες αντί για whitespace-nowrap
  *
  * Χρήση: include('partials/components/workflow/status-badge', { status: resolveStatus('order', code) })
  %>
@@ -22,12 +25,16 @@
   const _title     = typeof title !== 'undefined' && title ? title : '';
   const _attrs     = typeof attrs !== 'undefined' && attrs ? ' ' + String(attrs) : '';
   const _sizeClass = _size === 'md' ? 'badge-md' : (_size === 'sm' ? 'badge-sm' : 'badge-xs');
-  const _tone      = _st && _st.tone ? _st.tone : 'badge-ghost';
+  const _plain     = typeof plain !== 'undefined' && !!plain;
+  const _wrap      = typeof wrap !== 'undefined' && !!wrap;
+  const _tone      = _plain ? 'badge-outline' : (_st && _st.tone ? _st.tone : 'badge-ghost');
+  const _space     = _wrap ? 'h-auto min-h-5 py-0.5 whitespace-normal text-left leading-tight' : 'whitespace-nowrap';
+  const _attrsAll  = _attrs + (_plain ? ' data-wf-plain' : '');
   const _label     = _st ? _st.label : _fallback;
   const _emoji     = _st && _st.emoji ? _st.emoji : '•';
 %>
 <% if (_href) { %>
-<a href="<%= _href %>" class="badge <%= _sizeClass %> <%= _tone %> gap-1 whitespace-nowrap<%= _st ? '' : ' badge-outline' %>"<%- _attrs %> title="<%= _title %>"><%= _showEmoji ? _emoji + ' ' : '' %><%= _label %></a>
+<a href="<%= _href %>" class="badge <%= _sizeClass %> <%= _tone %> gap-1 <%= _space %><%= _st || _plain ? '' : ' badge-outline' %>"<%- _attrsAll %> title="<%= _title %>"><%= _showEmoji ? _emoji + ' ' : '' %><%= _label %></a>
 <% } else { %>
-<span class="badge <%= _sizeClass %> <%= _tone %> gap-1 whitespace-nowrap<%= _st ? '' : ' badge-outline' %>"<%- _attrs %> title="<%= _title %>"><%= _showEmoji ? _emoji + ' ' : '' %><%= _label %></span>
+<span class="badge <%= _sizeClass %> <%= _tone %> gap-1 <%= _space %><%= _st || _plain ? '' : ' badge-outline' %>"<%- _attrsAll %> title="<%= _title %>"><%= _showEmoji ? _emoji + ' ' : '' %><%= _label %></span>
 <% } %>

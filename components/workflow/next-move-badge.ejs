@@ -5,6 +5,8 @@
     row  (object) γραμμή με τα πεδία του `workflowService.attachStatuses`:
                   our_next_move, our_next_move_short, our_next_move_bucket
     size (string) 'xs' (default) | 'sm'
+    plain (bool)  χωρίς χρώματα: περίγραμμα + 📅 αντί για 🔴/🟠/🟡/🟢, και αναδίπλωση αντί για «…»
+                  (κάρτες λίστας προτιμολογίων / παραγγελιών)
 
   Τίποτα δεν βγαίνει αν η γραμμή δεν έχει κίνηση ή ημερομηνία.
 %>
@@ -16,9 +18,14 @@
   const _nmTone = { overdue: 'badge-error', today: 'badge-warning', week: 'badge-info', later: 'badge-success' }[_nmBucket] || 'badge-ghost';
   const _nmEmoji = { overdue: '🔴', today: '🟠', week: '🟡', later: '🟢' }[_nmBucket] || '📌';
   const _nmSize = (typeof size !== 'undefined' && size === 'sm') ? 'badge-sm' : 'badge-xs';
+  const _nmPlain = typeof plain !== 'undefined' && !!plain;
+  const _nmClass = _nmPlain
+    ? 'badge-outline h-auto min-h-4 py-0.5 whitespace-normal text-left leading-tight'
+    : _nmTone + ' max-w-56 truncate';
+  const _nmIcon = _nmPlain ? '📅' : _nmEmoji;
 %>
 <% if (_nmText || _nmShort) { %>
-<span class="badge <%= _nmSize %> <%= _nmTone %> gap-1 max-w-56 truncate" title="📌 Επόμενη κίνηση: <%= _nmText || '—' %><%= _nmShort ? ' · ' + _nmShort : '' %>">
-  <%= _nmEmoji %> <%= _nmShort ? _nmShort + (_nmText ? ' · ' : '') : '' %><%= _nmText %>
+<span class="badge <%= _nmSize %> <%= _nmClass %> gap-1" title="📌 Επόμενη κίνηση: <%= _nmText || '—' %><%= _nmShort ? ' · ' + _nmShort : '' %>">
+  <%= _nmIcon %> <%= _nmShort ? _nmShort + (_nmText ? ' · ' : '') : '' %><%= _nmText %>
 </span>
 <% } %>

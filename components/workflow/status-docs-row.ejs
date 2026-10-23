@@ -20,6 +20,7 @@
     statusEmail (προαιρετικό) κουμπί ✉ δίπλα στην κατάσταση όταν αυτή έχει πρότυπο email
                (`workflow.statusEmails`) + event `workflow:status-email` — η σελίδα πρέπει να το ακούει
                (σήμερα: protimologia-csv-form.ejs)
+    plain      (προαιρετικό) χωρίς χρώματα στο badge κατάστασης + στο ιστορικό (φόρμες προτιμολογίου/παραγγελίας)
 
   Το JS της αλλαγής κατάστασης είναι το κοινό `public/js/utils/workflow-status.js`
   (script tag στη φόρμα / στο layout) — εδώ μόνο το άνοιγμα-κλείσιμο των modal.
@@ -32,6 +33,7 @@
   const _sourcesUrl = (typeof sourcesUrl !== 'undefined') ? sourcesUrl : '';
   const _cellClass = (typeof cellClass !== 'undefined' && cellClass) ? ' ' + cellClass : '';
   const _statusEmail = typeof statusEmail !== 'undefined' && !!statusEmail;
+  const _plain = typeof plain !== 'undefined' && !!plain;
   const _statuses = _wf && Array.isArray(_wf.statuses) ? _wf.statuses : [];
   const _history = _wf && Array.isArray(_wf.history) ? _wf.history : [];
   const _showWf = !!(_wf && _entityId && _statuses.length);
@@ -96,7 +98,7 @@
   <div class="flex gap-1 min-w-0">
     <button type="button" class="btn btn-outline btn-sm flex-1 min-w-0 justify-start gap-1 normal-case font-normal overflow-hidden"
             data-open-dialog="<%= _dlgWf %>" title="Αλλαγή κατάστασης / ιστορικό αλλαγών">
-      <%- include('./status-badge', { status: _wf.status, size: 'sm', fallback: 'Χωρίς κατάσταση', attrs: 'data-wf-badge' }) %>
+      <%- include('./status-badge', { status: _wf.status, size: 'sm', fallback: 'Χωρίς κατάσταση', attrs: 'data-wf-badge', plain: _plain }) %>
       <span class="ml-auto shrink-0 text-[10px] text-base-content/50">Αλλαγή</span>
     </button>
     <%# ✉ = το πρότυπο email της κατάστασης (μεταβάσεις στο /workflow/statuses) → event `workflow:status-email` %>
@@ -133,7 +135,7 @@
         <% } %>
         <div id="wfStatusError" class="text-xs text-error hidden"></div>
         <div class="pt-1 max-h-64 overflow-y-auto">
-          <%- include('./status-timeline', { items: _history, compact: true }) %>
+          <%- include('./status-timeline', { items: _history, compact: true, plain: _plain }) %>
         </div>
       </div>
       <div class="modal-action">

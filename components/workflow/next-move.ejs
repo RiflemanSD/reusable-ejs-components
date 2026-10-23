@@ -23,6 +23,8 @@
     cellClass  επιπλέον κλάσεις στο κελί
     showSummary (default true) γραμμή «badge + κείμενο + ✏️»· false όταν η σελίδα έχει ήδη τα πεδία
                (υπόθεση) — μένουν μόνο τα κουμπιά ▶ και οι εναλλακτικές
+    plain       (default false) χωρίς χρώματα: badge ημερομηνίας/κατάστασης με περίγραμμα και 📅 αντί για 🔴/🟠/🟡/🟢
+                (φόρμες προτιμολογίου/παραγγελίας)
     bucketSlot  CSS selector στοιχείου της σελίδας όπου μπαίνει μόνο το emoji του κουβά (🔴/🟠/🟡/🟢)
                με tooltip την ημερομηνία — π.χ. δίπλα στον τίτλο «Επόμενη Κίνηση»
 
@@ -44,6 +46,7 @@
   const _cellClass = typeof cellClass !== 'undefined' && cellClass ? ' ' + cellClass : '';
   const _showSummary = typeof showSummary === 'undefined' ? true : !!showSummary;
   const _bucketSlot = typeof bucketSlot !== 'undefined' && bucketSlot ? String(bucketSlot) : '';
+  const _plain = typeof plain !== 'undefined' && !!plain;
   const _base = _kind && _id ? '/workflow/' + encodeURIComponent(_kind) + '/' + encodeURIComponent(_id) : '';
   const _json = JSON.stringify(_ctx || null).replace(/</g, '\\u003c');
 %>
@@ -57,7 +60,8 @@
      data-nm-edit="<%= _allowEdit ? '1' : '0' %>"
      data-nm-email="<%= _withEmail ? '1' : '0' %>"
      data-nm-summary-row="<%= _showSummary ? '1' : '0' %>"
-     data-nm-bucket-slot="<%= _bucketSlot %>">
+     data-nm-bucket-slot="<%= _bucketSlot %>"<% if (_plain) { %>
+     data-nm-plain="1"<% } %>>
   <script type="application/json" data-nm-ctx><%- _json %></script>
   <% if (_variant === 'cell') { %>
     <label class="label py-1">
