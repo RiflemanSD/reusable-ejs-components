@@ -116,7 +116,7 @@
                 <% } %>
                 <% if (item.csvRowNumber !== undefined && item.snapshotId) { %>
                   <form method="POST" action="/protimologia/copy-from-snapshot/<%= item.snapshotId %>" style="display:inline">
-                    <button type="submit" class="btn btn-warning btn-xs w-full mt-1" onclick="return confirm('Να μεταφερθεί το snapshot στη βάση και να ανοίξει για επεξεργασία;')">
+                    <button type="submit" class="btn btn-warning btn-xs w-full mt-1" data-confirm="Να μεταφερθεί το snapshot στη βάση και να ανοίξει για επεξεργασία;">
                       Μεταφορά & Επεξεργασία
                     </button>
                   </form>
