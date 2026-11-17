@@ -9,7 +9,110 @@
   var heroStats = typeof stats !== 'undefined' ? stats : null;
   var heroWarning = typeof warning !== 'undefined' ? warning : null;
   var heroCompact = typeof compact !== 'undefined' ? compact : false;
+
+  // Στυλ «Νέο» (opproducts BACKLOG P-1): res.locals.uiStyle === 'modern' → ουδέτερη κεφαλίδα
+  // (base-100, λεπτό περίγραμμα, breadcrumb πάνω από τον τίτλο, ένα btn-primary). Το `gradient`
+  // αγνοείται εκεί. Χωρίς uiStyle (άλλες εφαρμογές) → το κλασικό gradient banner, όπως πάντα.
+  var heroModern = typeof uiStyle !== 'undefined' && uiStyle === 'modern';
+  var heroPrimaryIdx = -1;
+  var heroActionClass = function (action, idx) {
+    var raw = (typeof action.btnClass === 'string' && action.btnClass.trim()) ? action.btnClass : 'btn-primary';
+    var tokens = raw.split(/\s+/).filter(Boolean);
+    var danger = tokens.indexOf('btn-error') !== -1;
+    var keep = tokens.filter(function (t) {
+      return !/^(btn-(primary|secondary|accent|info|success|warning|error|neutral|ghost|outline|sm|md|lg|xs)|text-white(\/\d+)?|border-white(\/\d+)?|hover:bg-white(\/\d+)?|shadow(-\w+)?)$/.test(t);
+    });
+    var role = danger ? 'btn-outline btn-error' : (idx === heroPrimaryIdx ? 'btn-primary' : 'btn-quiet');
+    return ['btn-sm', role].concat(keep).join(' ');
+  };
+  if (heroModern) {
+    // Το πρώτο «χρωματιστό» action (χωρίς btnClass = btn-primary, ή primary/success/info/accent όχι outline)
+    // γίνεται το μοναδικό btn-primary· τα υπόλοιπα ουδέτερα (btn-quiet), τα btn-error outline.
+    heroActions.some(function (a, i) {
+      var c = (typeof a.btnClass === 'string' && a.btnClass.trim()) ? a.btnClass : 'btn-primary';
+      if (/btn-(primary|success|info|accent)\b/.test(c) && !/btn-(outline|ghost)\b/.test(c)) { heroPrimaryIdx = i; return true; }
+      return false;
+    });
+  }
 %>
+
+<% if (heroModern) { %>
+<style>
+  .hero-modern .hero-icon svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+  .hero-modern .hero-icon svg, .hero-modern .hero-icon svg * { color: inherit !important; }
+  .hero-modern .breadcrumbs { padding: 0; }
+</style>
+<div class="bg-base-100 border-b border-base-300">
+  <div class="container mx-auto px-6 <%= heroCompact ? 'py-3' : 'py-4' %> hero-modern">
+    <div class="flex items-end justify-between flex-wrap gap-x-6 gap-y-3">
+      <div class="min-w-0">
+        <% if (heroBreadcrumbs.length > 0) { %>
+          <div class="breadcrumbs text-xs text-base-content/60 mb-1">
+            <ul>
+              <% heroBreadcrumbs.forEach(function(crumb) { %>
+                <li>
+                  <% if (crumb.href) { %>
+                    <a href="<%= crumb.href %>" class="hover:text-base-content"><%= crumb.text %></a>
+                  <% } else { %>
+                    <span><%= crumb.text %></span>
+                  <% } %>
+                </li>
+              <% }); %>
+            </ul>
+          </div>
+        <% } %>
+        <div class="flex items-center gap-3">
+          <% if (typeof icon !== 'undefined' && icon) { %>
+            <div class="hero-icon flex items-center justify-center w-9 h-9 rounded-btn bg-primary/10 text-primary shrink-0">
+              <%- icon %>
+            </div>
+          <% } %>
+          <h1 class="text-2xl font-semibold tracking-tight text-base-content leading-tight"><%= title %></h1>
+        </div>
+        <% if (heroSubtitle) { %>
+          <p class="text-sm text-base-content/60 mt-1"><%= heroSubtitle %></p>
+        <% } %>
+      </div>
+
+      <% if (heroStats && Array.isArray(heroStats) && heroStats.length > 0) { %>
+        <div class="flex gap-6 flex-wrap">
+          <% heroStats.forEach(function(stat) { %>
+            <div class="text-right">
+              <div class="text-xs text-base-content/60"><%= stat.label %></div>
+              <div class="text-xl font-semibold tabular-nums text-base-content"><%= stat.value || 0 %></div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else if (heroActions.length > 0) { %>
+        <div class="flex gap-2 flex-wrap">
+          <% heroActions.forEach(function(action, idx) { %>
+            <% if (action.href) { %>
+              <a href="<%= action.href %>" class="btn <%= heroActionClass(action, idx) %> gap-2">
+                <% if (action.icon) { %><%- action.icon %><% } %>
+                <%= action.text %>
+              </a>
+            <% } else if (action.onclick) { %>
+              <button onclick="<%= action.onclick %>" class="btn <%= heroActionClass(action, idx) %> gap-2">
+                <% if (action.icon) { %><%- action.icon %><% } %>
+                <%= action.text %>
+              </button>
+            <% } %>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+
+    <% if (heroWarning) { %>
+      <div class="alert alert-warning mt-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span><%- heroWarning %></span>
+      </div>
+    <% } %>
+  </div>
+</div>
+<% } else { %>
 
 <style>
   .hero-header svg { width: 2rem; height: 2rem; flex-shrink: 0; }
@@ -88,3 +191,4 @@
     <% } %>
   </div>
 </div>
+<% } %>
