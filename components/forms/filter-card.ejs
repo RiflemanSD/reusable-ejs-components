@@ -13,13 +13,35 @@
   var filterActiveCount = (filters || []).filter(function(f) {
     return f.value !== undefined && f.value !== null && String(f.value).trim() !== '';
   }).length;
+  // Στυλ «Νέο» (BACKLOG P-1, res.locals.uiStyle): συμπαγές, μικρά πεδία, chips ενεργών φίλτρων
+  var fcModern = typeof uiStyle !== 'undefined' && uiStyle === 'modern';
+  var fcInputSize = fcModern ? ' input-sm' : '';
+  var fcSelectSize = fcModern ? ' select-sm' : '';
+  var fcBtnSize = fcModern ? ' btn-sm' : '';
+  var fcIcon = fcModern ? 'h-4 w-4' : 'h-6 w-6';
+  var fcActive = (filters || []).filter(function(f) {
+    return f.value !== undefined && f.value !== null && String(f.value).trim() !== '';
+  });
+  function fcChipLabel(f) {
+    if (f.type === 'select') {
+      var opt = (f.options || []).find(function(o) { return String(o.value) === String(f.value); });
+      if (opt) return opt.label;
+    }
+    return String(f.value);
+  }
+  function fcUrlWithout(skip) {
+    var parts = fcActive.filter(function(f) { return f !== skip; }).map(function(f) {
+      return encodeURIComponent(f.name) + '=' + encodeURIComponent(String(f.value));
+    });
+    return action + (parts.length ? (String(action).indexOf('?') >= 0 ? '&' : '?') + parts.join('&') : '');
+  }
 %>
 
 <% if (filterCollapsible) { %>
-<div class="collapse collapse-arrow bg-base-100 shadow-lg mb-6">
+<div class="collapse collapse-arrow bg-base-100 <%= fcModern ? 'border border-base-300 rounded-box mb-4' : 'shadow-lg mb-6' %>">
   <input type="checkbox" />
-  <div class="collapse-title text-lg font-medium flex items-center gap-2 flex-wrap">
-    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="collapse-title <%= fcModern ? 'text-sm font-semibold min-h-0 py-3' : 'text-lg font-medium' %> flex items-center gap-2 flex-wrap">
+    <svg class="<%= fcIcon %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
     </svg>
     <%= filterTitle %>
@@ -30,10 +52,10 @@
   <div class="collapse-content">
     <form method="<%= filterMethod %>" action="<%= action %>">
 <% } else { %>
-<div class="card bg-base-100 shadow-lg mb-6">
-  <div class="card-body">
-    <h2 class="card-title text-lg mb-4">
-      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="card bg-base-100 <%= fcModern ? 'mb-4' : 'shadow-lg mb-6' %>">
+  <div class="card-body<%= fcModern ? ' p-4' : '' %>">
+    <h2 class="card-title <%= fcModern ? 'text-sm font-semibold mb-1' : 'text-lg mb-4' %>">
+      <svg class="<%= fcIcon %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
       </svg>
       <%= filterTitle %>
@@ -41,21 +63,21 @@
     
     <form method="<%= filterMethod %>" action="<%= action %>">
 <% } %>
-      <div class="grid grid-cols-1 md:grid-cols-<%= Math.min(filters.length, 4) %> gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-<%= Math.min(filters.length, 4) %> <%= fcModern ? 'gap-3' : 'gap-4' %>">
         <% filters.forEach(function(filter) { %>
           <div class="form-control">
-            <label class="label">
-              <span class="label-text"><%= filter.label %></span>
+            <label class="label<%= fcModern ? ' py-1' : '' %>">
+              <span class="label-text<%= fcModern ? ' text-xs font-medium' : '' %>"><%= filter.label %></span>
             </label>
             
             <% if (filter.type === 'date') { %>
               <input type="date" 
                      name="<%= filter.name %>" 
                      value="<%= filter.value || '' %>" 
-                     class="input input-bordered" />
+                     class="input input-bordered<%= fcInputSize %>" />
             
             <% } else if (filter.type === 'select') { %>
-              <select name="<%= filter.name %>" class="select select-bordered">
+              <select name="<%= filter.name %>" class="select select-bordered<%= fcSelectSize %>">
                 <% if (filter.placeholder) { %>
                   <option value=""><%= filter.placeholder %></option>
                 <% } %>
@@ -72,32 +94,40 @@
                      name="<%= filter.name %>" 
                      value="<%= filter.value || '' %>" 
                      placeholder="<%= filter.placeholder || '' %>"
-                     class="input input-bordered" />
+                     class="input input-bordered<%= fcInputSize %>" />
             
             <% } else if (filter.type === 'number') { %>
               <input type="number" 
                      name="<%= filter.name %>" 
                      value="<%= filter.value || '' %>" 
                      placeholder="<%= filter.placeholder || '' %>"
-                     class="input input-bordered" />
+                     class="input input-bordered<%= fcInputSize %>" />
             <% } %>
           </div>
         <% }); %>
       </div>
       
-      <div class="mt-4 flex gap-2">
-        <button type="submit" class="btn <%= filterSubmitClass %> gap-2">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="<%= fcModern ? 'mt-3' : 'mt-4' %> flex gap-2 flex-wrap items-center">
+        <button type="submit" class="btn <%= filterSubmitClass %><%= fcBtnSize %> gap-2">
+          <svg class="<%= fcModern ? 'h-4 w-4' : 'h-5 w-5' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <%= filterSubmitText %>
         </button>
-  <a href="<%= action %>" class="btn btn-ghost gap-2">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="<%= action %>" class="btn btn-ghost<%= fcBtnSize %> gap-2">
+          <svg class="<%= fcModern ? 'h-4 w-4' : 'h-5 w-5' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Clear
+          Καθαρισμός
         </a>
+        <% if (fcModern && fcActive.length) { %>
+          <span class="text-xs text-base-content/60 ml-1">Ενεργά:</span>
+          <% fcActive.forEach(function(f) { %>
+            <a href="<%= fcUrlWithout(f) %>" class="badge badge-primary gap-1 no-underline" title="Αφαίρεση φίλτρου">
+              <span class="opacity-70"><%= f.label %>:</span> <%= fcChipLabel(f) %> <span aria-hidden="true">×</span>
+            </a>
+          <% }); %>
+        <% } %>
       </div>
     </form>
 <% if (filterCollapsible) { %>

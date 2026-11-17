@@ -9,6 +9,12 @@
   const actionText = actionLabel || 'Άνοιγμα';
   const itemIdentifierKey = typeof identifierKey === 'string' && identifierKey ? identifierKey : 'id';
   const encodedReturnTo = typeof returnTo === 'string' ? returnTo : '';
+  // Στυλ «Νέο» (P-1): ποσά δεξιά με tabular digits, σύνοψη χωρίς emoji
+  const eptModern = typeof uiStyle !== 'undefined' && uiStyle === 'modern';
+  function isMoneyCol(columnName) {
+    const c = String(columnName).toLowerCase();
+    return c.includes('price') || c.includes('cost') || c.includes('total') || c.includes('amount');
+  }
   const resolvedLinkColumn = cols.find((col) => normalizedCandidates.includes(String(col).toLowerCase()));
 
   function formatCell(columnName, value) {
@@ -33,7 +39,7 @@
     <thead>
       <tr>
         <% cols.forEach((col) => { %>
-          <th><%= col %></th>
+          <th<%- eptModern && isMoneyCol(col) ? ' class="text-right"' : '' %>><%= col %></th>
         <% }) %>
         <% if (basePath) { %>
           <th>Ενέργεια</th>
@@ -52,7 +58,7 @@
             const cellText = formatCell(col, item[col]);
             const isLinkCol = resolvedLinkColumn && String(col).toLowerCase() === String(resolvedLinkColumn).toLowerCase() && itemUrl;
           %>
-            <td>
+            <td<%- eptModern && isMoneyCol(col) ? ' class="text-right whitespace-nowrap"' : '' %>>
               <% if (isLinkCol) { %>
                 <a href="<%= itemUrl %>" class="link link-primary font-medium"><%= cellText %></a>
               <% } else { %>
@@ -81,7 +87,7 @@
     </tbody>
   </table>
 
-  <div class="text-sm text-gray-600 mt-2">
-    📊 <%= Number(totalItems || 0).toLocaleString() %> συνολικά <%= summaryLabel || 'στοιχεία' %> - <%= cols.length %> στήλες
+  <div class="text-sm <%= eptModern ? 'text-base-content/60' : 'text-gray-600' %> mt-2">
+    <% if (!eptModern) { %>📊 <% } %><%= Number(totalItems || 0).toLocaleString() %> συνολικά <%= summaryLabel || 'στοιχεία' %> - <%= cols.length %> στήλες
   </div>
 </div>
