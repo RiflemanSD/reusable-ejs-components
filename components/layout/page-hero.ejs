@@ -41,8 +41,11 @@
   .hero-modern .hero-icon svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
   .hero-modern .hero-icon svg, .hero-modern .hero-icon svg * { color: inherit !important; }
   .hero-modern .breadcrumbs { padding: 0; }
+  /* Κενό κάτω από την κεφαλίδα: margin-top στο αμέσως επόμενο στοιχείο. :where = μηδενική προτεραιότητα, άρα ένα
+     mt-/my- της σελίδας κερδίζει· όσα ξεκινούν με δικό τους padding (py-/pt-, π.χ. container py-8) εξαιρούνται. */
+  :where(.page-hero + :not([class*="py-"]):not([class*="pt-"])) { margin-top: 1rem; }
 </style>
-<div class="bg-base-100 border-b border-base-300">
+<div class="page-hero bg-base-100 border-b border-base-300">
   <div class="container mx-auto px-6 <%= heroCompact ? 'py-3' : 'py-4' %> hero-modern">
     <div class="flex items-end justify-between flex-wrap gap-x-6 gap-y-3">
       <div class="min-w-0">
@@ -116,9 +119,10 @@
 
 <style>
   .hero-header svg { width: 2rem; height: 2rem; flex-shrink: 0; }
+  :where(.page-hero + :not([class*="py-"]):not([class*="pt-"])) { margin-top: 1rem; }
 </style>
 
-<div class="bg-gradient-to-r <%= gradient %> shadow-lg border-b border-opacity-60">
+<div class="page-hero bg-gradient-to-r <%= gradient %> shadow-lg border-b border-opacity-60">
   <div class="container mx-auto px-6 <%= heroCompact ? 'py-4' : 'py-8' %> hero-header">
     <div class="flex items-center justify-between flex-wrap gap-6">
       <div class="flex items-center gap-4">
